@@ -1,0 +1,1666 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>chapter006-02-iptables网络防火墙功能配置.md</title>
+<meta http-equiv="Content-type" content="text/html;charset=UTF-8">
+
+<style>
+/*---------------------------------------------------------------------------------------------
+ *  Copyright (c) Microsoft Corporation. All rights reserved.
+ *  Licensed under the MIT License. See License.txt in the project root for license information.
+ *--------------------------------------------------------------------------------------------*/
+
+body {
+	font-family: "Segoe WPC", "Segoe UI", "SFUIText-Light", "HelveticaNeue-Light", sans-serif, "Droid Sans Fallback";
+	font-size: 14px;
+	padding: 0 12px;
+	line-height: 22px;
+	word-wrap: break-word;
+}
+
+#code-csp-warning {
+	position: fixed;
+	top: 0;
+	right: 0;
+	color: white;
+	margin: 16px;
+	text-align: center;
+	font-size: 12px;
+	font-family: sans-serif;
+	background-color:#444444;
+	cursor: pointer;
+	padding: 6px;
+	box-shadow: 1px 1px 1px rgba(0,0,0,.25);
+}
+
+#code-csp-warning:hover {
+	text-decoration: none;
+	background-color:#007acc;
+	box-shadow: 2px 2px 2px rgba(0,0,0,.25);
+}
+
+
+body.scrollBeyondLastLine {
+	margin-bottom: calc(100vh - 22px);
+}
+
+body.showEditorSelection .code-line {
+	position: relative;
+}
+
+body.showEditorSelection .code-active-line:before,
+body.showEditorSelection .code-line:hover:before {
+	content: "";
+	display: block;
+	position: absolute;
+	top: 0;
+	left: -12px;
+	height: 100%;
+}
+
+body.showEditorSelection li.code-active-line:before,
+body.showEditorSelection li.code-line:hover:before {
+	left: -30px;
+}
+
+.vscode-light.showEditorSelection .code-active-line:before {
+	border-left: 3px solid rgba(0, 0, 0, 0.15);
+}
+
+.vscode-light.showEditorSelection .code-line:hover:before {
+	border-left: 3px solid rgba(0, 0, 0, 0.40);
+}
+
+.vscode-dark.showEditorSelection .code-active-line:before {
+	border-left: 3px solid rgba(255, 255, 255, 0.4);
+}
+
+.vscode-dark.showEditorSelection .code-line:hover:before {
+	border-left: 3px solid rgba(255, 255, 255, 0.60);
+}
+
+.vscode-high-contrast.showEditorSelection .code-active-line:before {
+	border-left: 3px solid rgba(255, 160, 0, 0.7);
+}
+
+.vscode-high-contrast.showEditorSelection .code-line:hover:before {
+	border-left: 3px solid rgba(255, 160, 0, 1);
+}
+
+img {
+	max-width: 100%;
+	max-height: 100%;
+}
+
+a {
+	color: #4080D0;
+	text-decoration: none;
+}
+
+a:focus,
+input:focus,
+select:focus,
+textarea:focus {
+	outline: 1px solid -webkit-focus-ring-color;
+	outline-offset: -1px;
+}
+
+hr {
+	border: 0;
+	height: 2px;
+	border-bottom: 2px solid;
+}
+
+h1 {
+	padding-bottom: 0.3em;
+	line-height: 1.2;
+	border-bottom-width: 1px;
+	border-bottom-style: solid;
+}
+
+h1, h2, h3 {
+	font-weight: normal;
+}
+
+h1 code,
+h2 code,
+h3 code,
+h4 code,
+h5 code,
+h6 code {
+	font-size: inherit;
+	line-height: auto;
+}
+
+a:hover {
+	color: #4080D0;
+	text-decoration: underline;
+}
+
+table {
+	border-collapse: collapse;
+}
+
+table > thead > tr > th {
+	text-align: left;
+	border-bottom: 1px solid;
+}
+
+table > thead > tr > th,
+table > thead > tr > td,
+table > tbody > tr > th,
+table > tbody > tr > td {
+	padding: 5px 10px;
+}
+
+table > tbody > tr + tr > td {
+	border-top: 1px solid;
+}
+
+blockquote {
+	margin: 0 7px 0 5px;
+	padding: 0 16px 0 10px;
+	border-left: 5px solid;
+}
+
+code {
+	font-family: Menlo, Monaco, Consolas, "Droid Sans Mono", "Courier New", monospace, "Droid Sans Fallback";
+	font-size: 14px;
+	line-height: 19px;
+}
+
+body.wordWrap pre {
+	white-space: pre-wrap;
+}
+
+.mac code {
+	font-size: 12px;
+	line-height: 18px;
+}
+
+pre:not(.hljs),
+pre.hljs code > div {
+	padding: 16px;
+	border-radius: 3px;
+	overflow: auto;
+}
+
+/** Theming */
+
+.vscode-light,
+.vscode-light pre code {
+	color: rgb(30, 30, 30);
+}
+
+.vscode-dark,
+.vscode-dark pre code {
+	color: #DDD;
+}
+
+.vscode-high-contrast,
+.vscode-high-contrast pre code {
+	color: white;
+}
+
+.vscode-light code {
+	color: #A31515;
+}
+
+.vscode-dark code {
+	color: #D7BA7D;
+}
+
+.vscode-light pre:not(.hljs),
+.vscode-light code > div {
+	background-color: rgba(220, 220, 220, 0.4);
+}
+
+.vscode-dark pre:not(.hljs),
+.vscode-dark code > div {
+	background-color: rgba(10, 10, 10, 0.4);
+}
+
+.vscode-high-contrast pre:not(.hljs),
+.vscode-high-contrast code > div {
+	background-color: rgb(0, 0, 0);
+}
+
+.vscode-high-contrast h1 {
+	border-color: rgb(0, 0, 0);
+}
+
+.vscode-light table > thead > tr > th {
+	border-color: rgba(0, 0, 0, 0.69);
+}
+
+.vscode-dark table > thead > tr > th {
+	border-color: rgba(255, 255, 255, 0.69);
+}
+
+.vscode-light h1,
+.vscode-light hr,
+.vscode-light table > tbody > tr + tr > td {
+	border-color: rgba(0, 0, 0, 0.18);
+}
+
+.vscode-dark h1,
+.vscode-dark hr,
+.vscode-dark table > tbody > tr + tr > td {
+	border-color: rgba(255, 255, 255, 0.18);
+}
+
+.vscode-light blockquote,
+.vscode-dark blockquote {
+	background: rgba(127, 127, 127, 0.1);
+	border-color: rgba(0, 122, 204, 0.5);
+}
+
+.vscode-high-contrast blockquote {
+	background: transparent;
+	border-color: #fff;
+}
+</style>
+
+<style>
+/* Tomorrow Theme */
+/* http://jmblog.github.com/color-themes-for-google-code-highlightjs */
+/* Original theme - https://github.com/chriskempson/tomorrow-theme */
+
+/* Tomorrow Comment */
+.hljs-comment,
+.hljs-quote {
+	color: #8e908c;
+}
+
+/* Tomorrow Red */
+.hljs-variable,
+.hljs-template-variable,
+.hljs-tag,
+.hljs-name,
+.hljs-selector-id,
+.hljs-selector-class,
+.hljs-regexp,
+.hljs-deletion {
+	color: #c82829;
+}
+
+/* Tomorrow Orange */
+.hljs-number,
+.hljs-built_in,
+.hljs-builtin-name,
+.hljs-literal,
+.hljs-type,
+.hljs-params,
+.hljs-meta,
+.hljs-link {
+	color: #f5871f;
+}
+
+/* Tomorrow Yellow */
+.hljs-attribute {
+	color: #eab700;
+}
+
+/* Tomorrow Green */
+.hljs-string,
+.hljs-symbol,
+.hljs-bullet,
+.hljs-addition {
+	color: #718c00;
+}
+
+/* Tomorrow Blue */
+.hljs-title,
+.hljs-section {
+	color: #4271ae;
+}
+
+/* Tomorrow Purple */
+.hljs-keyword,
+.hljs-selector-tag {
+	color: #8959a8;
+}
+
+.hljs {
+	display: block;
+	overflow-x: auto;
+	color: #4d4d4c;
+	padding: 0.5em;
+}
+
+.hljs-emphasis {
+	font-style: italic;
+}
+
+.hljs-strong {
+	font-weight: bold;
+}
+</style>
+
+<style>
+/*
+ * Markdown PDF CSS
+ */
+
+ body {
+	font-family:  "Meiryo", "Segoe WPC", "Segoe UI", "SFUIText-Light", "HelveticaNeue-Light", sans-serif, "Droid Sans Fallback";
+}
+
+pre {
+	background-color: #f8f8f8;
+	border: 1px solid #cccccc;
+	border-radius: 3px;
+	overflow-x: auto;
+	white-space: pre-wrap;
+	overflow-wrap: break-word;
+}
+
+pre:not(.hljs) {
+	padding: 23px;
+	line-height: 19px;
+}
+
+blockquote {
+	background: rgba(127, 127, 127, 0.1);
+	border-color: rgba(0, 122, 204, 0.5);
+}
+
+.emoji {
+	height: 1.4em;
+}
+
+/* for inline code */
+:not(pre):not(.hljs) > code {
+	color: #C9AE75; /* Change the old color so it seems less like an error */
+	font-size: inherit;
+}
+
+/* Page Break : use <div class="page"/> to insert page break
+-------------------------------------------------------- */
+.page {
+	page-break-after: always;
+}
+
+</style>
+
+</head>
+<body>
+<h2 id="%E7%AC%AC%E5%85%AD%E7%AB%A0-linux-%E9%98%B2%E7%81%AB%E5%A2%99%E9%85%8D%E7%BD%AE%E4%B8%8E%E7%AE%A1%E7%90%86">第六章 Linux 防火墙配置与管理</h2>
+<h3 id="%E7%AC%AC%E4%BA%8C%E8%8A%82-iptables-%E7%BD%91%E7%BB%9C%E9%98%B2%E7%81%AB%E5%A2%99%E5%8A%9F%E8%83%BD">第二节  iptables 网络防火墙功能</h3>
+<h4 id="621-centos76-%E4%B8%AD%E9%85%8D%E7%BD%AE-iptables-%E7%BD%91%E7%BB%9C%E9%98%B2%E7%81%AB%E5%A2%99%E6%A8%A1%E5%9E%8B">6.2.1 CentOS7.6 中配置 iptables 网络防火墙模型</h4>
+<pre class="hljs"><code><div>
+1. 本次实验的网络环境：
+   nat   网络的     网段是 192.168.10.0  网关地址是 192.168.10.2
+   仅主机 网络的     网段是  10.20.0.0
+
+
+
+2. 我们准备三台 CentOS7.6 服务器，关闭 selinux， 清空防火墙规则
+   三台主机中，node0 使用 nat 网卡模拟外网，node2 使用仅主机网卡模拟内网，node1 同时使用两块网卡充当网络防火墙
+
+主机名              ip地址              
+node0               192.168.10.10
+node1               192.168.10.20   10.20.100.102
+node2                               10.20.100.103
+
+node0 主机:
+[root@node0 ~]<span class="hljs-comment"># </span>
+[root@node0 ~]<span class="hljs-comment"># getenforce </span>
+Permissive
+[root@node0 ~]<span class="hljs-comment"># </span>
+[root@node0 ~]<span class="hljs-comment"># hostname</span>
+node0
+[root@node0 ~]<span class="hljs-comment"># </span>
+[root@node0 ~]<span class="hljs-comment"># iptables -vnL</span>
+Chain INPUT (policy ACCEPT 0 packets, 0 bytes)
+ pkts bytes target     prot opt <span class="hljs-keyword">in</span>     out     <span class="hljs-built_in">source</span>               destination         
+
+Chain FORWARD (policy ACCEPT 0 packets, 0 bytes)
+ pkts bytes target     prot opt <span class="hljs-keyword">in</span>     out     <span class="hljs-built_in">source</span>               destination         
+
+Chain OUTPUT (policy ACCEPT 0 packets, 0 bytes)
+ pkts bytes target     prot opt <span class="hljs-keyword">in</span>     out     <span class="hljs-built_in">source</span>               destination         
+[root@node0 ~]<span class="hljs-comment"># </span>
+[root@node0 ~]<span class="hljs-comment">#</span>
+
+[root@node0 ~]<span class="hljs-comment"># cat /etc/sysconfig/network-scripts/ifcfg-ens33 </span>
+TYPE=<span class="hljs-string">"Ethernet"</span>
+ONBOOT=<span class="hljs-string">"yes"</span>
+NAME=<span class="hljs-string">"ens33"</span>
+DEVICE=<span class="hljs-string">"ens33"</span>
+BOOTPROTO=<span class="hljs-string">"static"</span>
+IPADDR=<span class="hljs-string">"192.168.10.10"</span>
+NETMASK=<span class="hljs-string">"255.255.255.0"</span>
+GATEWAY=<span class="hljs-string">"192.168.10.2"</span>
+DNS1=<span class="hljs-string">"223.6.6.6"</span>
+[root@node0 ~]<span class="hljs-comment"># </span>
+[root@node0 ~]<span class="hljs-comment">#  </span>
+[root@node0 ~]<span class="hljs-comment"># vi /etc/sysconfig/network-scripts/route-ens33</span>
+[root@node0 ~]<span class="hljs-comment"># </span>
+[root@node0 ~]<span class="hljs-comment"># cat /etc/sysconfig/network-scripts/route-ens33</span>
+10.20.0.0/16 via 192.168.10.20 dev ens33
+[root@node0 ~]<span class="hljs-comment"># </span>
+[root@node0 ~]<span class="hljs-comment"># </span>
+[root@node0 ~]<span class="hljs-comment"># service network restart </span>
+Restarting network (via systemctl):                        [  OK  ]
+[root@node0 ~]<span class="hljs-comment"># </span>
+[root@node0 ~]<span class="hljs-comment">#</span>
+[root@node0 ~]<span class="hljs-comment">#</span>
+[root@node0 ~]<span class="hljs-comment"># ip a</span>
+1: lo: &lt;LOOPBACK,UP,LOWER_UP&gt; mtu 65536 qdisc noqueue state UNKNOWN group default qlen 1000
+    link/loopback 00:00:00:00:00:00 brd 00:00:00:00:00:00
+    inet 127.0.0.1/8 scope host lo
+       valid_lft forever preferred_lft forever
+    inet6 ::1/128 scope host 
+       valid_lft forever preferred_lft forever
+2: ens33: &lt;BROADCAST,MULTICAST,UP,LOWER_UP&gt; mtu 1500 qdisc pfifo_fast state UP group default qlen 1000
+    link/ether 00:0c:29:c5:14:0d brd ff:ff:ff:ff:ff:ff
+    inet 192.168.10.10/24 brd 192.168.10.255 scope global noprefixroute ens33
+       valid_lft forever preferred_lft forever
+    inet6 fe80::20c:29ff:fec5:140d/64 scope link 
+       valid_lft forever preferred_lft forever
+[root@node0 ~]<span class="hljs-comment"># </span>
+[root@node0 ~]<span class="hljs-comment"># </span>
+[root@node0 ~]<span class="hljs-comment"># ip r</span>
+default via 192.168.10.2 dev ens33 proto static metric 100 
+10.20.0.0/16 via 192.168.10.20 dev ens33 proto static metric 100 
+192.168.10.0/24 dev ens33 proto kernel scope link src 192.168.10.10 metric 100 
+[root@node0 ~]<span class="hljs-comment"># </span>
+[root@node0 ~]<span class="hljs-comment"># </span>
+[root@node0 ~]<span class="hljs-comment"># iptables -vnL</span>
+Chain INPUT (policy ACCEPT 21691 packets, 44M bytes)
+ pkts bytes target     prot opt <span class="hljs-keyword">in</span>     out     <span class="hljs-built_in">source</span>               destination         
+
+Chain FORWARD (policy ACCEPT 0 packets, 0 bytes)
+ pkts bytes target     prot opt <span class="hljs-keyword">in</span>     out     <span class="hljs-built_in">source</span>               destination         
+
+Chain OUTPUT (policy ACCEPT 1061 packets, 114K bytes)
+ pkts bytes target     prot opt <span class="hljs-keyword">in</span>     out     <span class="hljs-built_in">source</span>               destination         
+[root@node0 ~]<span class="hljs-comment"># </span>
+[root@node0 ~]<span class="hljs-comment">#</span>
+[root@node0 ~]<span class="hljs-comment"># ping www.baidu.com</span>
+PING www.a.shifen.com (61.135.169.125) 56(84) bytes of data.
+64 bytes from 61.135.169.125 (61.135.169.125): icmp_seq=1 ttl=128 time=3.37 ms
+64 bytes from 61.135.169.125 (61.135.169.125): icmp_seq=2 ttl=128 time=4.09 ms
+^C
+--- www.a.shifen.com ping statistics ---
+2 packets transmitted, 2 received, 0% packet loss, time 1002ms
+rtt min/avg/max/mdev = 3.375/3.735/4.095/0.360 ms
+[root@node0 ~]<span class="hljs-comment">#</span>
+
+
+
+
+node1 主机:
+[root@node1 ~]<span class="hljs-comment"># </span>
+[root@node1 ~]<span class="hljs-comment"># getenforce </span>
+Permissive
+[root@node1 ~]<span class="hljs-comment"># </span>
+[root@node1 ~]<span class="hljs-comment"># hostname</span>
+node1
+[root@node1 ~]<span class="hljs-comment"># </span>
+[root@node1 ~]<span class="hljs-comment"># </span>
+[root@node1 ~]<span class="hljs-comment"># iptables -vnL</span>
+Chain INPUT (policy ACCEPT 0 packets, 0 bytes)
+ pkts bytes target     prot opt <span class="hljs-keyword">in</span>     out     <span class="hljs-built_in">source</span>               destination         
+
+Chain FORWARD (policy ACCEPT 0 packets, 0 bytes)
+ pkts bytes target     prot opt <span class="hljs-keyword">in</span>     out     <span class="hljs-built_in">source</span>               destination         
+
+Chain OUTPUT (policy ACCEPT 0 packets, 0 bytes)
+ pkts bytes target     prot opt <span class="hljs-keyword">in</span>     out     <span class="hljs-built_in">source</span>               destination         
+[root@node1 ~]<span class="hljs-comment"># </span>
+[root@node1 ~]<span class="hljs-comment"># </span>
+[root@node1 ~]<span class="hljs-comment"># </span>
+[root@node1 ~]<span class="hljs-comment"># cat /etc/sysconfig/network-scripts/ifcfg-ens33</span>
+TYPE=<span class="hljs-string">"Ethernet"</span>
+BOOTPROTO=<span class="hljs-string">"static"</span>
+NAME=<span class="hljs-string">"ens33"</span>
+DEVICE=<span class="hljs-string">"ens33"</span>
+ONBOOT=<span class="hljs-string">"yes"</span>
+IPADDR=<span class="hljs-string">"192.168.10.20"</span>
+NETMASK=<span class="hljs-string">"255.255.255.0"</span>
+[root@node1 ~]<span class="hljs-comment"># </span>
+[root@node1 ~]<span class="hljs-comment"># </span>
+[root@node1 ~]<span class="hljs-comment"># cat /etc/sysconfig/network-scripts/ifcfg-ens37</span>
+TYPE=<span class="hljs-string">"Ethernet"</span>
+BOOTPROTO=<span class="hljs-string">"static"</span>
+NAME=<span class="hljs-string">"ens33"</span>
+DEVICE=<span class="hljs-string">"ens33"</span>
+ONBOOT=<span class="hljs-string">"yes"</span>
+IPADDR=<span class="hljs-string">"10.20.100.102"</span>
+NETMASK=<span class="hljs-string">"255.255.255.0"</span>
+[root@node1 ~]<span class="hljs-comment"># </span>
+[root@node1 ~]<span class="hljs-comment">#</span>
+[root@node1 ~]<span class="hljs-comment"># </span>
+[root@node1 ~]<span class="hljs-comment"># ip a</span>
+1: lo: &lt;LOOPBACK,UP,LOWER_UP&gt; mtu 65536 qdisc noqueue state UNKNOWN group default qlen 1000
+    link/loopback 00:00:00:00:00:00 brd 00:00:00:00:00:00
+    inet 127.0.0.1/8 scope host lo
+       valid_lft forever preferred_lft forever
+    inet6 ::1/128 scope host 
+       valid_lft forever preferred_lft forever
+2: ens33: &lt;BROADCAST,MULTICAST,UP,LOWER_UP&gt; mtu 1500 qdisc pfifo_fast state UP group default qlen 1000
+    link/ether 00:0c:29:a7:db:80 brd ff:ff:ff:ff:ff:ff
+    inet 192.168.10.20/24 brd 192.168.10.255 scope global noprefixroute ens33
+       valid_lft forever preferred_lft forever
+    inet6 fe80::20c:29ff:fea7:db80/64 scope link 
+       valid_lft forever preferred_lft forever
+3: ens37: &lt;BROADCAST,MULTICAST,UP,LOWER_UP&gt; mtu 1500 qdisc pfifo_fast state UP group default qlen 1000
+    link/ether 00:0c:29:a7:db:8a brd ff:ff:ff:ff:ff:ff
+    inet 10.20.100.102/16 brd 10.20.255.255 scope global noprefixroute dynamic ens37
+       valid_lft 691752sec preferred_lft 691752sec
+    inet6 fe80::b748:f69c:2a67:8d18/64 scope link noprefixroute 
+       valid_lft forever preferred_lft forever
+[root@node1 ~]<span class="hljs-comment"># </span>
+[root@node1 ~]<span class="hljs-comment">#</span>
+[root@node1 ~]<span class="hljs-comment"># iptables -vnL</span>
+Chain INPUT (policy ACCEPT 0 packets, 0 bytes)
+ pkts bytes target     prot opt <span class="hljs-keyword">in</span>     out     <span class="hljs-built_in">source</span>               destination         
+
+Chain FORWARD (policy ACCEPT 0 packets, 0 bytes)
+ pkts bytes target     prot opt <span class="hljs-keyword">in</span>     out     <span class="hljs-built_in">source</span>               destination         
+
+Chain OUTPUT (policy ACCEPT 0 packets, 0 bytes)
+ pkts bytes target     prot opt <span class="hljs-keyword">in</span>     out     <span class="hljs-built_in">source</span>               destination         
+[root@node1 ~]<span class="hljs-comment"># </span>
+[root@node1 ~]<span class="hljs-comment">#</span>
+
+
+node2:
+[root@node2 ~]<span class="hljs-comment"># </span>
+[root@node2 ~]<span class="hljs-comment"># getenforce </span>
+Permissive
+[root@node2 ~]<span class="hljs-comment"># </span>
+[root@node2 ~]<span class="hljs-comment"># hostname</span>
+node2
+[root@node2 ~]<span class="hljs-comment"># </span>
+[root@node2 ~]<span class="hljs-comment"># </span>
+[root@node2 ~]<span class="hljs-comment"># iptables -vnL</span>
+Chain INPUT (policy ACCEPT 0 packets, 0 bytes)
+ pkts bytes target     prot opt <span class="hljs-keyword">in</span>     out     <span class="hljs-built_in">source</span>               destination         
+
+Chain FORWARD (policy ACCEPT 0 packets, 0 bytes)
+ pkts bytes target     prot opt <span class="hljs-keyword">in</span>     out     <span class="hljs-built_in">source</span>               destination         
+
+Chain OUTPUT (policy ACCEPT 0 packets, 0 bytes)
+ pkts bytes target     prot opt <span class="hljs-keyword">in</span>     out     <span class="hljs-built_in">source</span>               destination         
+[root@node2 ~]<span class="hljs-comment"># </span>
+[root@node2 ~]<span class="hljs-comment"># </span>
+[root@node2 ~]<span class="hljs-comment"># cat /etc/sysconfig/network-scripts/ifcfg-ens33 </span>
+TYPE=<span class="hljs-string">"Ethernet"</span>
+BOOTPROTO=<span class="hljs-string">"static"</span>
+NAME=<span class="hljs-string">"ens33"</span>
+DEVICE=<span class="hljs-string">"ens33"</span>
+ONBOOT=<span class="hljs-string">"yes"</span>
+IPADDR=<span class="hljs-string">"10.20.100.103"</span>
+NETMASK=<span class="hljs-string">"255.255.0.0"</span>
+GATEWAY=<span class="hljs-string">"10.20.100.102"</span>
+[root@node2 ~]<span class="hljs-comment"># </span>
+[root@node2 ~]<span class="hljs-comment"># ip a</span>
+1: lo: &lt;LOOPBACK,UP,LOWER_UP&gt; mtu 65536 qdisc noqueue state UNKNOWN group default qlen 1000
+    link/loopback 00:00:00:00:00:00 brd 00:00:00:00:00:00
+    inet 127.0.0.1/8 scope host lo
+       valid_lft forever preferred_lft forever
+    inet6 ::1/128 scope host 
+       valid_lft forever preferred_lft forever
+2: ens33: &lt;BROADCAST,MULTICAST,UP,LOWER_UP&gt; mtu 1500 qdisc pfifo_fast state UP group default qlen 1000
+    link/ether 00:0c:29:8e:2c:5f brd ff:ff:ff:ff:ff:ff
+    inet 10.20.100.103/16 brd 10.20.255.255 scope global noprefixroute ens33
+       valid_lft forever preferred_lft forever
+[root@node2 ~]<span class="hljs-comment"># </span>
+[root@node2 ~]
+[root@node2 ~]<span class="hljs-comment"># iptables -vnL</span>
+Chain INPUT (policy ACCEPT 22959 packets, 1886K bytes)
+ pkts bytes target     prot opt <span class="hljs-keyword">in</span>     out     <span class="hljs-built_in">source</span>               destination         
+
+Chain FORWARD (policy ACCEPT 0 packets, 0 bytes)
+ pkts bytes target     prot opt <span class="hljs-keyword">in</span>     out     <span class="hljs-built_in">source</span>               destination         
+
+Chain OUTPUT (policy ACCEPT 2817 packets, 202K bytes)
+ pkts bytes target     prot opt <span class="hljs-keyword">in</span>     out     <span class="hljs-built_in">source</span>               destination         
+[root@node2 ~]<span class="hljs-comment"># </span>
+[root@node2 ~]<span class="hljs-comment">#</span>
+
+
+
+2. 开启 node1 网络防火墙的转发功能
+
+未开启前，node0 和 node2 无法相互访问:
+
+
+node0   ping   node2
+----------------------
+[root@node0 ~]<span class="hljs-comment"># </span>
+[root@node0 ~]<span class="hljs-comment"># ping 10.20.100.103</span>
+PING 10.20.100.103 (10.20.100.103) 56(84) bytes of data.
+
+^C
+--- 10.20.100.103 ping statistics ---
+5 packets transmitted, 0 received, 100% packet loss, time 4000ms
+
+[root@node0 ~]<span class="hljs-comment">#</span>
+
+
+
+node2    ping   node0
+----------------------
+[root@node2 ~]<span class="hljs-comment"># ping 192.168.10.10</span>
+PING 192.168.10.10 (192.168.10.10) 56(84) bytes of data.
+
+
+^C
+--- 192.168.10.10 ping statistics ---
+2 packets transmitted, 0 received, 100% packet loss, time 1001ms
+
+[root@node2 ~]<span class="hljs-comment"># </span>
+
+
+
+下面我们将 node1 的网络转发功能开启
+[root@node1 ~]<span class="hljs-comment"># vi /etc/sysctl.conf </span>
+[root@node1 ~]<span class="hljs-comment">#  </span>
+[root@node1 ~]<span class="hljs-comment"># cat /etc/sysctl.conf </span>
+net.ipv4.ip_forward = 1
+[root@node1 ~]<span class="hljs-comment"># </span>
+[root@node1 ~]<span class="hljs-comment"># sysctl -p</span>
+net.ipv4.ip_forward = 1
+[root@node1 ~]<span class="hljs-comment"># </span>
+[root@node1 ~]<span class="hljs-comment">#</span>
+
+
+
+node0  ping  node2
+----------------------
+[root@node0 ~]<span class="hljs-comment"># ping 10.20.100.103</span>
+PING 10.20.100.103 (10.20.100.103) 56(84) bytes of data.
+64 bytes from 10.20.100.103: icmp_seq=1 ttl=63 time=1.14 ms
+64 bytes from 10.20.100.103: icmp_seq=2 ttl=63 time=0.482 ms
+64 bytes from 10.20.100.103: icmp_seq=3 ttl=63 time=0.451 ms
+^C
+--- 10.20.100.103 ping statistics ---
+3 packets transmitted, 3 received, 0% packet loss, time 2001ms
+rtt min/avg/max/mdev = 0.451/0.692/1.145/0.321 ms
+[root@node0 ~]<span class="hljs-comment">#</span>
+
+
+
+node2   ping  node0
+----------------------
+[root@node2 ~]<span class="hljs-comment"># ping 192.168.10.10</span>
+PING 192.168.10.10 (192.168.10.10) 56(84) bytes of data.
+64 bytes from 192.168.10.10: icmp_seq=1 ttl=63 time=3.11 ms
+64 bytes from 192.168.10.10: icmp_seq=2 ttl=63 time=0.424 ms
+64 bytes from 192.168.10.10: icmp_seq=3 ttl=63 time=0.574 ms
+^C
+--- 192.168.10.10 ping statistics ---
+3 packets transmitted, 3 received, 0% packet loss, time 2001ms
+rtt min/avg/max/mdev = 0.424/1.371/3.116/1.235 ms
+[root@node2 ~]<span class="hljs-comment">#</span>
+
+</div></code></pre>
+<h4 id="622-%E7%A6%81%E6%AD%A2%E7%BD%91%E7%BB%9C%E6%A8%A1%E5%9E%8B%E4%B8%AD%E7%9A%84%E5%86%85%E5%A4%96%E7%BD%91%E7%9B%B8%E4%BA%92%E8%AE%BF%E9%97%AE">6.2.2 禁止网络模型中的内外网相互访问</h4>
+<pre class="hljs"><code><div>1. 上一节中，我们网络防护墙模型中的 iptables 规则为空，内外网相互访问不受限制，下面我们禁止所以得内外网访问
+node1 的 filter 表中添加防火墙规则，拒绝所有数据包
+[root@node1 ~]<span class="hljs-comment"># </span>
+[root@node1 ~]<span class="hljs-comment"># iptables -A FORWARD -j REJECT</span>
+[root@node1 ~]<span class="hljs-comment">#  </span>
+[root@node1 ~]<span class="hljs-comment"># iptables -vnL</span>
+Chain INPUT (policy ACCEPT 42 packets, 3136 bytes)
+ pkts bytes target     prot opt <span class="hljs-keyword">in</span>     out     <span class="hljs-built_in">source</span>               destination         
+
+Chain FORWARD (policy ACCEPT 0 packets, 0 bytes)
+ pkts bytes target     prot opt <span class="hljs-keyword">in</span>     out     <span class="hljs-built_in">source</span>               destination         
+    0     0 REJECT     all  --  *      *       0.0.0.0/0            0.0.0.0/0            reject-with icmp-port-unreachable
+
+Chain OUTPUT (policy ACCEPT 30 packets, 2920 bytes)
+ pkts bytes target     prot opt <span class="hljs-keyword">in</span>     out     <span class="hljs-built_in">source</span>               destination         
+[root@node1 ~]<span class="hljs-comment"># </span>
+[root@node1 ~]<span class="hljs-comment">#</span>
+
+
+
+2. 测试 node0 和 node2 是否课程正常访问
+   测试如下，两端均无法访问
+
+node0 ping node2
+----------------
+[root@node0 ~]<span class="hljs-comment"># ping 10.20.100.103</span>
+PING 10.20.100.103 (10.20.100.103) 56(84) bytes of data.
+From 192.168.10.20 icmp_seq=1 Destination Port Unreachable
+From 192.168.10.20 icmp_seq=2 Destination Port Unreachable
+From 192.168.10.20 icmp_seq=3 Destination Port Unreachable
+^C
+--- 10.20.100.103 ping statistics ---
+3 packets transmitted, 0 received, +3 errors, 100% packet loss, time 2003ms
+
+[root@node0 ~]<span class="hljs-comment"># </span>
+[root@node0 ~]<span class="hljs-comment">#</span>
+
+
+node2  ping  node0
+------------------
+[root@node2 ~]<span class="hljs-comment"># ping 192.168.10.10</span>
+PING 192.168.10.10 (192.168.10.10) 56(84) bytes of data.
+From 10.20.100.102 icmp_seq=1 Destination Port Unreachable
+From 10.20.100.102 icmp_seq=2 Destination Port Unreachable
+From 10.20.100.102 icmp_seq=3 Destination Port Unreachable
+^C
+--- 192.168.10.10 ping statistics ---
+3 packets transmitted, 0 received, +3 errors, 100% packet loss, time 2002ms
+
+[root@node2 ~]<span class="hljs-comment">#</span>
+</div></code></pre>
+<h4 id="623-%E5%BC%80%E9%80%9A%E7%BD%91%E7%BB%9C%E6%A8%A1%E5%9E%8B%E4%B8%AD%E5%86%85%E7%BD%91%E5%8F%AF%E4%BB%A5-ping-%E5%A4%96%E7%BD%91%EF%BC%8C%E5%A4%96%E7%BD%91%E5%8F%AF%E4%BB%A5%E8%AE%BF%E9%97%AE%E5%86%85%E7%BD%91%E7%9A%84-web-%E6%9C%8D%E5%8A%A1">6.2.3 开通网络模型中内网可以 ping 外网，外网可以访问内网的 web 服务</h4>
+<pre class="hljs"><code><div>1. node1 中添加允许 10.20 网段的 ping 请求数据包和响应数据包通过
+[root@node1 ~]<span class="hljs-comment"># iptables -vnL</span>
+Chain INPUT (policy ACCEPT 21 packets, 1672 bytes)
+ pkts bytes target     prot opt <span class="hljs-keyword">in</span>     out     <span class="hljs-built_in">source</span>               destination         
+
+Chain FORWARD (policy ACCEPT 0 packets, 0 bytes)
+ pkts bytes target     prot opt <span class="hljs-keyword">in</span>     out     <span class="hljs-built_in">source</span>               destination         
+    0     0 REJECT     all  --  *      *       0.0.0.0/0            0.0.0.0/0            reject-with icmp-port-unreachable
+
+Chain OUTPUT (policy ACCEPT 17 packets, 1660 bytes)
+ pkts bytes target     prot opt <span class="hljs-keyword">in</span>     out     <span class="hljs-built_in">source</span>               destination         
+[root@node1 ~]<span class="hljs-comment"># </span>
+[root@node1 ~]<span class="hljs-comment"># </span>
+[root@node1 ~]<span class="hljs-comment">#</span>
+[root@node1 ~]<span class="hljs-comment"># </span>
+[root@node1 ~]<span class="hljs-comment"># iptables -I FORWARD -s 10.20.0.0/16 -p icmp --icmp-type 8 -j ACCEPT</span>
+[root@node1 ~]<span class="hljs-comment"># </span>
+[root@node1 ~]<span class="hljs-comment"># iptables -I FORWARD -d 10.20.0.0/16 -p icmp --icmp-type 0 -j ACCEPT</span>
+[root@node1 ~]<span class="hljs-comment"># </span>
+[root@node1 ~]<span class="hljs-comment"># </span>
+[root@node1 ~]<span class="hljs-comment"># </span>
+[root@node1 ~]<span class="hljs-comment"># iptables -vnL</span>
+Chain INPUT (policy ACCEPT 23 packets, 1752 bytes)
+ pkts bytes target     prot opt <span class="hljs-keyword">in</span>     out     <span class="hljs-built_in">source</span>               destination         
+
+Chain FORWARD (policy ACCEPT 0 packets, 0 bytes)
+ pkts bytes target     prot opt <span class="hljs-keyword">in</span>     out     <span class="hljs-built_in">source</span>               destination         
+    0     0 ACCEPT     icmp --  *      *       0.0.0.0/0            10.20.0.0/16         icmptype 0
+    0     0 ACCEPT     icmp --  *      *       10.20.0.0/16         0.0.0.0/0            icmptype 8
+    0     0 REJECT     all  --  *      *       0.0.0.0/0            0.0.0.0/0            reject-with icmp-port-unreachable
+
+Chain OUTPUT (policy ACCEPT 17 packets, 1660 bytes)
+ pkts bytes target     prot opt <span class="hljs-keyword">in</span>     out     <span class="hljs-built_in">source</span>               destination         
+[root@node1 ~]<span class="hljs-comment"># </span>
+[root@node1 ~]<span class="hljs-comment">#</span>
+
+2. 内网 node2 ping node0 进行测试
+
+node2 可以 ping 通 node0
+-----------------------
+[root@node2 ~]<span class="hljs-comment"># ping 192.168.10.10</span>
+PING 192.168.10.10 (192.168.10.10) 56(84) bytes of data.
+64 bytes from 192.168.10.10: icmp_seq=1 ttl=63 time=1.36 ms
+64 bytes from 192.168.10.10: icmp_seq=2 ttl=63 time=0.483 ms
+64 bytes from 192.168.10.10: icmp_seq=3 ttl=63 time=0.615 ms
+^C
+--- 192.168.10.10 ping statistics ---
+3 packets transmitted, 3 received, 0% packet loss, time 2001ms
+rtt min/avg/max/mdev = 0.483/0.819/1.361/0.387 ms
+[root@node2 ~]<span class="hljs-comment"># </span>
+[root@node2 ~]<span class="hljs-comment">#</span>
+
+node0 依旧无法 ping 通 node2
+[root@node0 ~]<span class="hljs-comment"># </span>
+[root@node0 ~]<span class="hljs-comment"># ping 10.20.100.103</span>
+PING 10.20.100.103 (10.20.100.103) 56(84) bytes of data.
+From 192.168.10.20 icmp_seq=1 Destination Port Unreachable
+From 192.168.10.20 icmp_seq=2 Destination Port Unreachable
+From 192.168.10.20 icmp_seq=3 Destination Port Unreachable
+^C
+--- 10.20.100.103 ping statistics ---
+3 packets transmitted, 0 received, +3 errors, 100% packet loss, time 2003ms
+
+[root@node0 ~]<span class="hljs-comment"># </span>
+[root@node0 ~]<span class="hljs-comment">#</span>
+
+
+
+3. 在 node1 添加规则允许 tcp 协议的 80 和 443 端口的数据包通过
+[root@node1 ~]<span class="hljs-comment"># </span>
+[root@node1 ~]<span class="hljs-comment"># iptables -I FORWARD 3 -s 192.168.10.0/24 -p tcp -m multiport --dport 80,443 -j ACCEPT</span>
+[root@node1 ~]<span class="hljs-comment"># </span>
+[root@node1 ~]<span class="hljs-comment"># iptables -I FORWARD 1 -m state --state ESTABLISHED,RELATED -j ACCEPT</span>
+[root@node1 ~]<span class="hljs-comment"># </span>
+[root@node1 ~]<span class="hljs-comment"># iptables -vnL</span>
+Chain INPUT (policy ACCEPT 38 packets, 3012 bytes)
+ pkts bytes target     prot opt <span class="hljs-keyword">in</span>     out     <span class="hljs-built_in">source</span>               destination         
+
+Chain FORWARD (policy ACCEPT 0 packets, 0 bytes)
+ pkts bytes target     prot opt <span class="hljs-keyword">in</span>     out     <span class="hljs-built_in">source</span>               destination         
+    0     0 ACCEPT     all  --  *      *       0.0.0.0/0            0.0.0.0/0            state RELATED,ESTABLISHED
+    3   252 ACCEPT     icmp --  *      *       10.20.0.0/16         0.0.0.0/0            icmptype 8
+    3   252 ACCEPT     icmp --  *      *       0.0.0.0/0            10.20.0.0/16         icmptype 0
+    0     0 ACCEPT     tcp  --  *      *       192.168.10.0/24      0.0.0.0/0            multiport dports 80,443
+    3   252 REJECT     all  --  *      *       0.0.0.0/0            0.0.0.0/0            reject-with icmp-port-unreachable
+
+Chain OUTPUT (policy ACCEPT 32 packets, 2936 bytes)
+ pkts bytes target     prot opt <span class="hljs-keyword">in</span>     out     <span class="hljs-built_in">source</span>               destination                  
+[root@node1 ~]<span class="hljs-comment">#</span>
+
+我们在 node2 上安装 httpd 服务进行测试
+首先挂载 CentOS7.6 系统光盘
+[root@node2 ~]<span class="hljs-comment"># df -h</span>
+Filesystem      Size  Used Avail Use% Mounted on
+/dev/sda3        15G  1.1G   14G   7% /
+devtmpfs        224M     0  224M   0% /dev
+tmpfs           235M     0  235M   0% /dev/shm
+tmpfs           235M  5.6M  229M   3% /run
+tmpfs           235M     0  235M   0% /sys/fs/cgroup
+/dev/sda1      1014M  127M  888M  13% /boot
+tmpfs            47M     0   47M   0% /run/user/0
+[root@node2 ~]<span class="hljs-comment">#</span>
+[root@node2 ~]<span class="hljs-comment"># </span>
+[root@node2 ~]<span class="hljs-comment"># mkdir -pv /cdrom</span>
+mkdir: created directory ‘/cdrom’
+[root@node2 ~]<span class="hljs-comment"># </span>
+[root@node2 ~]<span class="hljs-comment"># mount /dev/cdrom /cdrom/</span>
+mount: /dev/sr0 is write-protected, mounting <span class="hljs-built_in">read</span>-only
+[root@node2 ~]<span class="hljs-comment"># </span>
+[root@node2 ~]<span class="hljs-comment"># df -h</span>
+Filesystem      Size  Used Avail Use% Mounted on
+/dev/sda3        15G  1.1G   14G   7% /
+devtmpfs        224M     0  224M   0% /dev
+tmpfs           235M     0  235M   0% /dev/shm
+tmpfs           235M  5.6M  229M   3% /run
+tmpfs           235M     0  235M   0% /sys/fs/cgroup
+/dev/sda1      1014M  127M  888M  13% /boot
+tmpfs            47M     0   47M   0% /run/user/0
+/dev/sr0        4.3G  4.3G     0 100% /cdrom
+[root@node2 ~]<span class="hljs-comment"># </span>
+[root@node2 ~]<span class="hljs-comment">#</span>
+
+配置光盘 yum 源，安装 httpd 服务
+[root@node2 ~]<span class="hljs-comment"># </span>
+[root@node2 ~]<span class="hljs-comment"># cd /etc/yum.repos.d/</span>
+[root@node2 yum.repos.d]<span class="hljs-comment"># </span>
+[root@node2 yum.repos.d]<span class="hljs-comment"># ls</span>
+CentOS-Base.repo  CentOS-Debuginfo.repo  CentOS-Media.repo    CentOS-Vault.repo
+CentOS-CR.repo    CentOS-fasttrack.repo  CentOS-Sources.repo
+[root@node2 yum.repos.d]<span class="hljs-comment"># </span>
+[root@node2 yum.repos.d]<span class="hljs-comment"># mkdir -pv bak</span>
+mkdir: created directory ‘bak’
+[root@node2 yum.repos.d]<span class="hljs-comment"># </span>
+[root@node2 yum.repos.d]<span class="hljs-comment"># mv Cent* bak/</span>
+[root@node2 yum.repos.d]<span class="hljs-comment"># </span>
+[root@node2 yum.repos.d]<span class="hljs-comment"># ll</span>
+total 0
+drwxr-xr-x. 2 root root 187 Aug  3 17:55 bak
+[root@node2 yum.repos.d]<span class="hljs-comment"># </span>
+[root@node2 yum.repos.d]<span class="hljs-comment"># </span>
+[root@node2 yum.repos.d]<span class="hljs-comment"># vi base.repo</span>
+[root@node2 yum.repos.d]<span class="hljs-comment">#  </span>
+[root@node2 yum.repos.d]<span class="hljs-comment"># cat base.repo </span>
+[CentOS7-Base]
+name=CentOS7
+baseurl=file:///cdrom/
+enabled=1
+gpgcheck=0
+[root@node2 yum.repos.d]<span class="hljs-comment"># </span>
+[root@node2 yum.repos.d]<span class="hljs-comment">#</span>
+[root@node2 yum.repos.d]<span class="hljs-comment"># yum clean all</span>
+Loaded plugins: fastestmirror
+Cleaning repos: CentOS7-Base
+Cleaning up list of fastest mirrors
+[root@node2 yum.repos.d]<span class="hljs-comment"># </span>
+[root@node2 yum.repos.d]<span class="hljs-comment"># </span>
+[root@node2 yum.repos.d]<span class="hljs-comment"># yum install httpd -y </span>
+Loaded plugins: fastestmirror
+Determining fastest mirrors
+CentOS7-Base                                                                         | 3.6 kB  00:00:00     
+(1/2): CentOS7-Base/group_gz                                                         | 166 kB  00:00:00     
+(2/2): CentOS7-Base/primary_db                                                       | 3.1 MB  00:00:00     
+Package httpd-2.4.6-88.el7.centos.x86_64 already installed and latest version
+Nothing to <span class="hljs-keyword">do</span>
+[root@node2 yum.repos.d]<span class="hljs-comment"># </span>
+[root@node2 yum.repos.d]<span class="hljs-comment"># cd</span>
+[root@node2 ~]<span class="hljs-comment">#</span>
+[root@node2 ~]<span class="hljs-comment"># echo 'magedu.io index page' &gt; /var/www/html/index.html</span>
+[root@node2 ~]<span class="hljs-comment"># </span>
+[root@node2 ~]<span class="hljs-comment"># systemctl start httpd</span>
+[root@node2 ~]<span class="hljs-comment">#</span>
+[root@node2 ~]<span class="hljs-comment"># </span>
+[root@node2 ~]<span class="hljs-comment"># ss -ntl</span>
+State      Recv-Q Send-Q         Local Address:Port                        Peer Address:Port              
+LISTEN     0      128                        *:80                                     *:*                  
+LISTEN     0      128                        *:22                                     *:*                  
+LISTEN     0      100                127.0.0.1:25                                     *:*                  
+LISTEN     0      128                       :::22                                    :::*                  
+LISTEN     0      100                      ::1:25                                    :::*                  
+[root@node2 ~]<span class="hljs-comment"># </span>
+[root@node2 ~]<span class="hljs-comment"># curl 127.0.0.1</span>
+magedu.io index page
+[root@node2 ~]<span class="hljs-comment"># </span>
+[root@node2 ~]<span class="hljs-comment">#</span>
+
+使用 node0 进行 访问测试
+[root@node0 ~]<span class="hljs-comment"># </span>
+[root@node0 ~]<span class="hljs-comment"># curl 10.20.100.103</span>
+magedu.io index page
+[root@node0 ~]<span class="hljs-comment"># </span>
+[root@node0 ~]<span class="hljs-comment">#</span>
+</div></code></pre>
+<h4 id="624-%E5%9C%A8%E7%BD%91%E7%BB%9C%E6%A8%A1%E5%9E%8B%E4%B8%AD%E5%88%9B%E5%BB%BA%E4%B8%80%E4%B8%AA%E8%87%AA%E5%AE%9A%E4%B9%89%E9%93%BE%E5%B9%B6%E9%85%8D%E7%BD%AE%E8%A7%84%E5%88%99%EF%BC%8C%E9%99%90%E5%88%B6%E5%86%85%E7%BD%91%E7%94%A8%E6%88%B7%E5%8F%AA%E8%83%BD%E5%9C%A8%E7%89%B9%E5%AE%9A%E6%97%B6%E9%97%B4%E5%8F%AF%E4%BB%A5%E8%AE%BF%E9%97%AE%E5%A4%96%E7%BD%91-web-%E6%9C%8D%E5%8A%A1">6.2.4 在网络模型中创建一个自定义链并配置规则，限制内网用户只能在特定时间可以访问外网 web 服务</h4>
+<pre class="hljs"><code><div>1. 我们在上一个实验的基础上添加一个新链 WEBLIM
+[root@node1 ~]<span class="hljs-comment"># iptables -vnL</span>
+Chain INPUT (policy ACCEPT 68 packets, 5510 bytes)
+ pkts bytes target     prot opt <span class="hljs-keyword">in</span>     out     <span class="hljs-built_in">source</span>               destination         
+
+Chain FORWARD (policy ACCEPT 0 packets, 0 bytes)
+ pkts bytes target     prot opt <span class="hljs-keyword">in</span>     out     <span class="hljs-built_in">source</span>               destination         
+    9   815 ACCEPT     all  --  *      *       0.0.0.0/0            0.0.0.0/0            state RELATED,ESTABLISHED
+    3   252 ACCEPT     icmp --  *      *       10.20.0.0/16         0.0.0.0/0            icmptype 8
+    3   252 ACCEPT     icmp --  *      *       0.0.0.0/0            10.20.0.0/16         icmptype 0
+    1    60 ACCEPT     tcp  --  *      *       192.168.10.0/24      0.0.0.0/0            multiport dports 80,443
+    3   252 REJECT     all  --  *      *       0.0.0.0/0            0.0.0.0/0            reject-with icmp-port-unreachable
+
+Chain OUTPUT (policy ACCEPT 57 packets, 6104 bytes)
+ pkts bytes target     prot opt <span class="hljs-keyword">in</span>     out     <span class="hljs-built_in">source</span>               destination         
+
+Chain WEBLIM (0 references)
+ pkts bytes target     prot opt <span class="hljs-keyword">in</span>     out     <span class="hljs-built_in">source</span>               destination         
+[root@node1 ~]<span class="hljs-comment"># </span>
+[root@node1 ~]<span class="hljs-comment">#</span>
+[root@node1 ~]<span class="hljs-comment"># iptables -N WEBLIM</span>
+[root@node1 ~]<span class="hljs-comment"># </span>
+[root@node1 ~]<span class="hljs-comment"># iptables -vnL</span>
+Chain INPUT (policy ACCEPT 23 packets, 1788 bytes)
+ pkts bytes target     prot opt <span class="hljs-keyword">in</span>     out     <span class="hljs-built_in">source</span>               destination         
+
+Chain FORWARD (policy ACCEPT 0 packets, 0 bytes)
+ pkts bytes target     prot opt <span class="hljs-keyword">in</span>     out     <span class="hljs-built_in">source</span>               destination         
+   12  1067 ACCEPT     all  --  *      *       0.0.0.0/0            0.0.0.0/0            state RELATED,ESTABLISHED
+    4   336 ACCEPT     icmp --  *      *       10.20.0.0/16         0.0.0.0/0            icmptype 8
+    3   252 ACCEPT     icmp --  *      *       0.0.0.0/0            10.20.0.0/16         icmptype 0
+    1    60 ACCEPT     tcp  --  *      *       192.168.10.0/24      0.0.0.0/0            multiport dports 80,443
+    6   504 REJECT     all  --  *      *       0.0.0.0/0            0.0.0.0/0            reject-with icmp-port-unreachable
+
+Chain OUTPUT (policy ACCEPT 19 packets, 1740 bytes)
+ pkts bytes target     prot opt <span class="hljs-keyword">in</span>     out     <span class="hljs-built_in">source</span>               destination         
+
+Chain WEBLIM (0 references)
+ pkts bytes target     prot opt <span class="hljs-keyword">in</span>     out     <span class="hljs-built_in">source</span>               destination         
+[root@node1 ~]<span class="hljs-comment"># </span>
+[root@node1 ~]<span class="hljs-comment"># </span>
+[root@node1 ~]<span class="hljs-comment">#</span>
+
+
+
+2. 在 WEBLIM 中添加允许内网访问外网的规则， 并调用 WEBLIM 链
+[root@node1 ~]<span class="hljs-comment"># iptables -A WEBLIM -s 10.20.0.0/16 -p tcp -m multiport --dports 53,80,443 -j ACCEPT</span>
+[root@node1 ~]<span class="hljs-comment"># </span>
+[root@node1 ~]<span class="hljs-comment"># iptables -A WEBLIM -s 10.20.0.0/16 -p udp -m multiport --dports 53 -j ACCEPT</span>
+[root@node1 ~]<span class="hljs-comment">#  </span>
+[root@node1 ~]<span class="hljs-comment"># iptables -vnL</span>
+Chain INPUT (policy ACCEPT 24 packets, 1740 bytes)
+ pkts bytes target     prot opt <span class="hljs-keyword">in</span>     out     <span class="hljs-built_in">source</span>               destination         
+
+Chain FORWARD (policy ACCEPT 0 packets, 0 bytes)
+ pkts bytes target     prot opt <span class="hljs-keyword">in</span>     out     <span class="hljs-built_in">source</span>               destination         
+   12  1067 ACCEPT     all  --  *      *       0.0.0.0/0            0.0.0.0/0            state RELATED,ESTABLISHED
+    4   336 ACCEPT     icmp --  *      *       10.20.0.0/16         0.0.0.0/0            icmptype 8
+    3   252 ACCEPT     icmp --  *      *       0.0.0.0/0            10.20.0.0/16         icmptype 0
+    1    60 ACCEPT     tcp  --  *      *       192.168.10.0/24      0.0.0.0/0            multiport dports 80,443
+    6   504 REJECT     all  --  *      *       0.0.0.0/0            0.0.0.0/0            reject-with icmp-port-unreachable
+
+Chain OUTPUT (policy ACCEPT 16 packets, 1536 bytes)
+ pkts bytes target     prot opt <span class="hljs-keyword">in</span>     out     <span class="hljs-built_in">source</span>               destination         
+
+Chain WEBLIM (0 references)
+ pkts bytes target     prot opt <span class="hljs-keyword">in</span>     out     <span class="hljs-built_in">source</span>               destination         
+    0     0 ACCEPT     tcp  --  *      *       10.20.0.0/16         0.0.0.0/0            multiport dports 53,80,443
+    0     0 ACCEPT     udp  --  *      *       10.20.0.0/16         0.0.0.0/0            multiport dports 53
+[root@node1 ~]<span class="hljs-comment"># </span>
+[root@node1 ~]<span class="hljs-comment"># </span>
+[root@node1 ~]<span class="hljs-comment"># iptables -I FORWARD 2 -j WEBLIM</span>
+[root@node1 ~]<span class="hljs-comment"># </span>
+[root@node1 ~]<span class="hljs-comment"># iptables -vnL</span>
+Chain INPUT (policy ACCEPT 48 packets, 3740 bytes)
+ pkts bytes target     prot opt <span class="hljs-keyword">in</span>     out     <span class="hljs-built_in">source</span>               destination         
+
+Chain FORWARD (policy ACCEPT 0 packets, 0 bytes)
+ pkts bytes target     prot opt <span class="hljs-keyword">in</span>     out     <span class="hljs-built_in">source</span>               destination         
+   12  1067 ACCEPT     all  --  *      *       0.0.0.0/0            0.0.0.0/0            state RELATED,ESTABLISHED
+    0     0 WEBLIM     all  --  *      *       0.0.0.0/0            0.0.0.0/0           
+    4   336 ACCEPT     icmp --  *      *       10.20.0.0/16         0.0.0.0/0            icmptype 8
+    3   252 ACCEPT     icmp --  *      *       0.0.0.0/0            10.20.0.0/16         icmptype 0
+    1    60 ACCEPT     tcp  --  *      *       192.168.10.0/24      0.0.0.0/0            multiport dports 80,443
+    6   504 REJECT     all  --  *      *       0.0.0.0/0            0.0.0.0/0            reject-with icmp-port-unreachable
+
+Chain OUTPUT (policy ACCEPT 37 packets, 3596 bytes)
+ pkts bytes target     prot opt <span class="hljs-keyword">in</span>     out     <span class="hljs-built_in">source</span>               destination         
+
+Chain WEBLIM (1 references)
+ pkts bytes target     prot opt <span class="hljs-keyword">in</span>     out     <span class="hljs-built_in">source</span>               destination         
+    0     0 ACCEPT     tcp  --  *      *       10.20.0.0/16         0.0.0.0/0            multiport dports 53,80,443
+    0     0 ACCEPT     udp  --  *      *       10.20.0.0/16         0.0.0.0/0            multiport dports 53
+[root@node1 ~]<span class="hljs-comment"># </span>
+[root@node1 ~]<span class="hljs-comment">#</span>
+
+
+3. 在 node0 中安装 http 服务，并启动
+[root@node0 ~]<span class="hljs-comment"># yum install -y httpd</span>
+Loaded plugins: fastestmirror
+Loading mirror speeds from cached hostfile
+ * base: mirror.bit.edu.cn
+ * extras: mirror.bit.edu.cn
+ * updates: mirrors.huaweicloud.com
+Package httpd-2.4.6-89.el7.centos.1.x86_64 already installed and latest version
+Nothing to <span class="hljs-keyword">do</span>
+[root@node0 ~]<span class="hljs-comment"># </span>
+[root@node0 ~]<span class="hljs-comment"># echo "www.magedu.com by node0" &gt; /var/www/html/index.html</span>
+[root@node0 ~]<span class="hljs-comment"># </span>
+[root@node0 ~]<span class="hljs-comment"># systemctl start httpd</span>
+[root@node0 ~]<span class="hljs-comment"># </span>
+[root@node0 ~]<span class="hljs-comment"># curl 127.0.0.1</span>
+www.magedu.com by node0
+[root@node0 ~]<span class="hljs-comment"># </span>
+[root@node0 ~]<span class="hljs-comment">#</span>
+
+
+
+4. 使用 node2 测试访问外网 node0 的 web 服务
+[root@node2 ~]<span class="hljs-comment"># curl 192.168.10.10</span>
+www.magedu.com by node0
+[root@node2 ~]<span class="hljs-comment"># </span>
+[root@node2 ~]<span class="hljs-comment">#</span>
+
+
+
+5. 上面完成了内网访问外网 web 服务的设置，下面我们修改一下规则，加上时间限制 18 点到 22 点可以访问外网
+[root@node1 ~]<span class="hljs-comment"># </span>
+[root@node1 ~]<span class="hljs-comment"># iptables -R WEBLIM 1 -s 10.20.0.0/16 -p tcp -m multiport --dports 53,80,443 -m time --timestart 18:00 --timestop 22:00 --kerneltz -j ACCEPT</span>
+[root@node1 ~]<span class="hljs-comment"># </span>
+[root@node1 ~]<span class="hljs-comment"># iptables -R WEBLIM 2 -s 10.20.0.0/16 -p tcp --dport 53 -m time --timestart 18:00 --timestop 22:00 --kerneltz -j ACCEPT</span>
+[root@node1 ~]<span class="hljs-comment">#  </span>
+[root@node1 ~]<span class="hljs-comment"># iptables -vnL</span>
+Chain INPUT (policy ACCEPT 24 packets, 1792 bytes)
+ pkts bytes target     prot opt <span class="hljs-keyword">in</span>     out     <span class="hljs-built_in">source</span>               destination         
+
+Chain FORWARD (policy ACCEPT 0 packets, 0 bytes)
+ pkts bytes target     prot opt <span class="hljs-keyword">in</span>     out     <span class="hljs-built_in">source</span>               destination         
+   30  2703 ACCEPT     all  --  *      *       0.0.0.0/0            0.0.0.0/0            state RELATED,ESTABLISHED
+    2   120 WEBLIM     all  --  *      *       0.0.0.0/0            0.0.0.0/0           
+    4   336 ACCEPT     icmp --  *      *       10.20.0.0/16         0.0.0.0/0            icmptype 8
+    3   252 ACCEPT     icmp --  *      *       0.0.0.0/0            10.20.0.0/16         icmptype 0
+    1    60 ACCEPT     tcp  --  *      *       192.168.10.0/24      0.0.0.0/0            multiport dports 80,443
+    6   504 REJECT     all  --  *      *       0.0.0.0/0            0.0.0.0/0            reject-with icmp-port-unreachable
+
+Chain OUTPUT (policy ACCEPT 17 packets, 1660 bytes)
+ pkts bytes target     prot opt <span class="hljs-keyword">in</span>     out     <span class="hljs-built_in">source</span>               destination         
+
+Chain WEBLIM (1 references)
+ pkts bytes target     prot opt <span class="hljs-keyword">in</span>     out     <span class="hljs-built_in">source</span>               destination         
+    0     0 ACCEPT     tcp  --  *      *       10.20.0.0/16         0.0.0.0/0            multiport dports 53,80,443 TIME from 18:00:00 to 22:00:00
+    0     0 ACCEPT     tcp  --  *      *       10.20.0.0/16         0.0.0.0/0            tcp dpt:53 TIME from 18:00:00 to 22:00:00
+[root@node1 ~]<span class="hljs-comment"># </span>
+[root@node1 ~]<span class="hljs-comment"># </span>
+[root@node1 ~]<span class="hljs-comment"># date</span>
+Sat Aug  3 20:00:03 CST 2019
+[root@node1 ~]<span class="hljs-comment"># </span>
+[root@node1 ~]<span class="hljs-comment">#</span>
+
+在 node2 中进程访问测试，访问成功
+[root@node2 ~]<span class="hljs-comment"># curl 192.168.10.10</span>
+www.magedu.com by node0
+[root@node2 ~]<span class="hljs-comment">#</span>
+
+
+6. 我们修改 node1 的系统时间为 10点 ，测试一下时间设置是否生效
+[root@node1 ~]<span class="hljs-comment"># </span>
+[root@node1 ~]<span class="hljs-comment"># date -s 10:00:00</span>
+Sat Aug  3 10:00:00 CST 2019
+[root@node1 ~]<span class="hljs-comment"># </span>
+[root@node1 ~]<span class="hljs-comment">#</span>
+
+node2 进行访问测试，发现时间限制功能生效
+[root@node2 ~]<span class="hljs-comment"># curl 192.168.10.10</span>
+curl: (7) Failed connect to 192.168.10.10:80; Connection refused
+[root@node2 ~]<span class="hljs-comment">#</span>
+</div></code></pre>
+<h4 id="625-%E5%9C%A8%E7%BD%91%E7%BB%9C%E6%A8%A1%E5%9E%8B%E4%B8%AD%E5%AF%B9%E5%BA%94%E7%94%A8%E5%B1%82%E6%95%B0%E6%8D%AE%E5%8C%85%E4%B8%AD%E7%9A%84%E5%AD%97%E7%AC%A6%E4%B8%B2%E8%BF%9B%E8%A1%8C%E8%BF%87%E6%BB%A4">6.2.5 在网络模型中对应用层数据包中的字符串进行过滤</h4>
+<pre class="hljs"><code><div>1. 我们在上一个实验的基础上，进行这个字符串过滤测试
+[root@node1 ~]<span class="hljs-comment"># iptables -vnL</span>
+Chain INPUT (policy ACCEPT 153 packets, 11584 bytes)
+ pkts bytes target     prot opt <span class="hljs-keyword">in</span>     out     <span class="hljs-built_in">source</span>               destination         
+
+Chain FORWARD (policy ACCEPT 0 packets, 0 bytes)
+ pkts bytes target     prot opt <span class="hljs-keyword">in</span>     out     <span class="hljs-built_in">source</span>               destination         
+   39  3521 ACCEPT     all  --  *      *       0.0.0.0/0            0.0.0.0/0            state RELATED,ESTABLISHED
+    4   240 WEBLIM     all  --  *      *       0.0.0.0/0            0.0.0.0/0           
+    4   336 ACCEPT     icmp --  *      *       10.20.0.0/16         0.0.0.0/0            icmptype 8
+    3   252 ACCEPT     icmp --  *      *       0.0.0.0/0            10.20.0.0/16         icmptype 0
+    1    60 ACCEPT     tcp  --  *      *       192.168.10.0/24      0.0.0.0/0            multiport dports 80,443
+    7   564 REJECT     all  --  *      *       0.0.0.0/0            0.0.0.0/0            reject-with icmp-port-unreachable
+
+Chain OUTPUT (policy ACCEPT 117 packets, 12656 bytes)
+ pkts bytes target     prot opt <span class="hljs-keyword">in</span>     out     <span class="hljs-built_in">source</span>               destination         
+
+Chain WEBLIM (1 references)
+ pkts bytes target     prot opt <span class="hljs-keyword">in</span>     out     <span class="hljs-built_in">source</span>               destination         
+    1    60 ACCEPT     tcp  --  *      *       10.20.0.0/16         0.0.0.0/0            multiport dports 53,80,443 TIME from 18:00:00 to 22:00:00
+    0     0 ACCEPT     tcp  --  *      *       10.20.0.0/16         0.0.0.0/0            tcp dpt:53 TIME from 18:00:00 to 22:00:00
+[root@node1 ~]<span class="hljs-comment">#  </span>
+[root@node1 ~]<span class="hljs-comment"># date</span>
+Sun Aug  4 20:01:39 CST 2019
+[root@node1 ~]<span class="hljs-comment"># </span>
+[root@node1 ~]<span class="hljs-comment">#</span>
+
+
+2. 我们在 node0 主机上 创建包含 google 信息的 html 文件
+[root@node0 ~]<span class="hljs-comment"># </span>
+[root@node0 ~]<span class="hljs-comment"># echo 'welcome to newworld' &gt; /var/www/html/google.html</span>
+[root@node0 ~]<span class="hljs-comment">#  </span>
+[root@node0 ~]<span class="hljs-comment"># echo 'google info' &gt; /var/www/html/info.html</span>
+[root@node0 ~]<span class="hljs-comment"># </span>
+[root@node0 ~]<span class="hljs-comment"># curl 127.0.0.1/info.html</span>
+google info
+[root@node0 ~]<span class="hljs-comment"># </span>
+[root@node0 ~]<span class="hljs-comment"># curl 127.0.0.1/google.html</span>
+welcome to newworld 
+[root@node0 ~]<span class="hljs-comment"># </span>
+
+使用 node2 进行访问测试
+[root@node2 ~]<span class="hljs-comment"># </span>
+[root@node2 ~]<span class="hljs-comment"># curl 192.168.10.10/google.html</span>
+welcome to newworld
+[root@node2 ~]<span class="hljs-comment"># </span>
+[root@node2 ~]<span class="hljs-comment"># curl 192.168.10.10/info.html</span>
+google info
+[root@node2 ~]<span class="hljs-comment"># </span>
+[root@node2 ~]<span class="hljs-comment"># </span>
+
+3. 现在我们在 node1 的 filter 表 FORWARD 链上添加一条字符串匹配过滤规则，禁止 google 字样在应用层数据包中出现
+[root@node1 ~]<span class="hljs-comment"># </span>
+[root@node1 ~]<span class="hljs-comment"># iptables -I FORWARD  -p tcp -m string --algo bm --string "google" -j REJECT</span>
+[root@node1 ~]<span class="hljs-comment"># </span>
+[root@node1 ~]<span class="hljs-comment"># iptables -vnL</span>
+Chain INPUT (policy ACCEPT 22 packets, 1660 bytes)
+ pkts bytes target     prot opt <span class="hljs-keyword">in</span>     out     <span class="hljs-built_in">source</span>               destination         
+
+Chain FORWARD (policy ACCEPT 0 packets, 0 bytes)
+ pkts bytes target     prot opt <span class="hljs-keyword">in</span>     out     <span class="hljs-built_in">source</span>               destination         
+   12  2008 REJECT     tcp  --  *      *       0.0.0.0/0            0.0.0.0/0            STRING match  <span class="hljs-string">"google"</span> ALGO name bm TO 65535 reject-with icmp-port-unreachable
+  200 18289 ACCEPT     all  --  *      *       0.0.0.0/0            0.0.0.0/0            state RELATED,ESTABLISHED
+   21  1260 WEBLIM     all  --  *      *       0.0.0.0/0            0.0.0.0/0           
+    4   336 ACCEPT     icmp --  *      *       10.20.0.0/16         0.0.0.0/0            icmptype 8
+    3   252 ACCEPT     icmp --  *      *       0.0.0.0/0            10.20.0.0/16         icmptype 0
+    1    60 ACCEPT     tcp  --  *      *       192.168.10.0/24      0.0.0.0/0            multiport dports 80,443
+    8   624 REJECT     all  --  *      *       0.0.0.0/0            0.0.0.0/0            reject-with icmp-port-unreachable
+
+Chain OUTPUT (policy ACCEPT 28 packets, 3880 bytes)
+ pkts bytes target     prot opt <span class="hljs-keyword">in</span>     out     <span class="hljs-built_in">source</span>               destination         
+
+Chain WEBLIM (1 references)
+ pkts bytes target     prot opt <span class="hljs-keyword">in</span>     out     <span class="hljs-built_in">source</span>               destination         
+   17  1020 ACCEPT     tcp  --  *      *       10.20.0.0/16         0.0.0.0/0            multiport dports 53,80,443 TIME from 18:00:00 to 22:00:00
+    0     0 ACCEPT     tcp  --  *      *       10.20.0.0/16         0.0.0.0/0            tcp dpt:53 TIME from 18:00:00 to 22:00:00
+[root@node1 ~]<span class="hljs-comment"># </span>
+[root@node1 ~]<span class="hljs-comment"># </span>
+
+
+使用 node2 进行访问测试，访问均被拒绝
+[root@node2 ~]<span class="hljs-comment"># curl 192.168.10.10/google.html</span>
+^C
+
+
+[root@node2 ~]<span class="hljs-comment"># </span>
+[root@node2 ~]<span class="hljs-comment"># </span>
+[root@node2 ~]<span class="hljs-comment"># curl 192.168.10.10/info.html</span>
+
+
+^C
+[root@node2 ~]<span class="hljs-comment"># </span>
+[root@node2 ~]<span class="hljs-comment">#</span>
+</div></code></pre>
+<h4 id="626-%E5%9C%A8%E7%BD%91%E7%BB%9C%E6%A8%A1%E5%9E%8B%E4%B8%AD%E6%8C%87%E5%AE%9A%E6%9F%90%E4%BA%9B-ip-%E5%9C%B0%E5%9D%80%E8%8C%83%E5%9B%B4%E7%9A%84%E6%9C%8D%E5%8A%A1%E5%99%A8%E7%A6%81%E6%AD%A2%E8%AE%BF%E9%97%AE%E5%A4%96%E7%BD%91">6.2.6 在网络模型中指定某些 ip 地址范围的服务器禁止访问外网</h4>
+<pre class="hljs"><code><div>1. 我们在上一个实验的基础上，添加一条限定多 ip 地址范围的规则即可实现
+   未添加规则时可以正则访问
+[root@node1 ~]<span class="hljs-comment"># iptables -vnL</span>
+Chain INPUT (policy ACCEPT 22 packets, 1660 bytes)
+ pkts bytes target     prot opt <span class="hljs-keyword">in</span>     out     <span class="hljs-built_in">source</span>               destination         
+
+Chain FORWARD (policy ACCEPT 0 packets, 0 bytes)
+ pkts bytes target     prot opt <span class="hljs-keyword">in</span>     out     <span class="hljs-built_in">source</span>               destination         
+   12  2008 REJECT     tcp  --  *      *       0.0.0.0/0            0.0.0.0/0            STRING match  <span class="hljs-string">"google"</span> ALGO name bm TO 65535 reject-with icmp-port-unreachable
+  200 18289 ACCEPT     all  --  *      *       0.0.0.0/0            0.0.0.0/0            state RELATED,ESTABLISHED
+   21  1260 WEBLIM     all  --  *      *       0.0.0.0/0            0.0.0.0/0           
+    4   336 ACCEPT     icmp --  *      *       10.20.0.0/16         0.0.0.0/0            icmptype 8
+    3   252 ACCEPT     icmp --  *      *       0.0.0.0/0            10.20.0.0/16         icmptype 0
+    1    60 ACCEPT     tcp  --  *      *       192.168.10.0/24      0.0.0.0/0            multiport dports 80,443
+    8   624 REJECT     all  --  *      *       0.0.0.0/0            0.0.0.0/0            reject-with icmp-port-unreachable
+
+Chain OUTPUT (policy ACCEPT 28 packets, 3880 bytes)
+ pkts bytes target     prot opt <span class="hljs-keyword">in</span>     out     <span class="hljs-built_in">source</span>               destination         
+
+Chain WEBLIM (1 references)
+ pkts bytes target     prot opt <span class="hljs-keyword">in</span>     out     <span class="hljs-built_in">source</span>               destination         
+   17  1020 ACCEPT     tcp  --  *      *       10.20.0.0/16         0.0.0.0/0            multiport dports 53,80,443 TIME from 18:00:00 to 22:00:00
+    0     0 ACCEPT     tcp  --  *      *       10.20.0.0/16         0.0.0.0/0            tcp dpt:53 TIME from 18:00:00 to 22:00:00
+[root@node1 ~]<span class="hljs-comment"># </span>
+
+node2 可以正常访问外网
+[root@node2 ~]<span class="hljs-comment"># </span>
+[root@node2 ~]<span class="hljs-comment"># curl 192.168.10.10</span>
+www.magedu.com by node0
+[root@node2 ~]<span class="hljs-comment"># </span>
+[root@node2 ~]<span class="hljs-comment"># </span>
+
+
+2. 添加规则
+[root@node1 ~]<span class="hljs-comment"># iptables -I WEBLIM -p tcp --dport 80 -m iprange --src-range 10.20.100.100-10.20.100.150 -j REJECT</span>
+[root@node1 ~]<span class="hljs-comment"># </span>
+[root@node1 ~]<span class="hljs-comment"># iptables -vnL</span>
+Chain INPUT (policy ACCEPT 21 packets, 1620 bytes)
+ pkts bytes target     prot opt <span class="hljs-keyword">in</span>     out     <span class="hljs-built_in">source</span>               destination         
+
+Chain FORWARD (policy ACCEPT 0 packets, 0 bytes)
+ pkts bytes target     prot opt <span class="hljs-keyword">in</span>     out     <span class="hljs-built_in">source</span>               destination         
+   32  5464 REJECT     tcp  --  *      *       0.0.0.0/0            0.0.0.0/0            STRING match  <span class="hljs-string">"google"</span> ALGO name bm TO 65535 reject-with icmp-port-unreachable
+  231 20459 ACCEPT     all  --  *      *       0.0.0.0/0            0.0.0.0/0            state RELATED,ESTABLISHED
+   25  1500 WEBLIM     all  --  *      *       0.0.0.0/0            0.0.0.0/0           
+    4   336 ACCEPT     icmp --  *      *       10.20.0.0/16         0.0.0.0/0            icmptype 8
+    3   252 ACCEPT     icmp --  *      *       0.0.0.0/0            10.20.0.0/16         icmptype 0
+    1    60 ACCEPT     tcp  --  *      *       192.168.10.0/24      0.0.0.0/0            multiport dports 80,443
+    8   624 REJECT     all  --  *      *       0.0.0.0/0            0.0.0.0/0            reject-with icmp-port-unreachable
+
+Chain OUTPUT (policy ACCEPT 16 packets, 1536 bytes)
+ pkts bytes target     prot opt <span class="hljs-keyword">in</span>     out     <span class="hljs-built_in">source</span>               destination         
+
+Chain WEBLIM (1 references)
+ pkts bytes target     prot opt <span class="hljs-keyword">in</span>     out     <span class="hljs-built_in">source</span>               destination         
+    0     0 REJECT     tcp  --  *      *       0.0.0.0/0            0.0.0.0/0            tcp dpt:80 <span class="hljs-built_in">source</span> IP range 10.20.100.100-10.20.100.150 reject-with icmp-port-unreachable
+   21  1260 ACCEPT     tcp  --  *      *       10.20.0.0/16         0.0.0.0/0            multiport dports 53,80,443 TIME from 18:00:00 to 22:00:00
+    0     0 ACCEPT     tcp  --  *      *       10.20.0.0/16         0.0.0.0/0            tcp dpt:53 TIME from 18:00:00 to 22:00:00
+[root@node1 ~]<span class="hljs-comment"># </span>
+[root@node1 ~]<span class="hljs-comment">#</span>
+
+
+node2 被限制访问
+[root@node2 ~]<span class="hljs-comment"># curl 192.168.10.10</span>
+curl: (7) Failed connect to 192.168.10.10:80; Connection refused
+[root@node2 ~]<span class="hljs-comment">#</span>
+
+</div></code></pre>
+<h4 id="627-%E5%9C%A8%E7%BD%91%E7%BB%9C%E6%A8%A1%E5%9E%8B%E4%B8%AD%E9%99%90%E5%AE%9A%E7%94%A8%E6%88%B7%E7%9A%84%E8%AF%B7%E6%B1%82%E5%B9%B6%E5%8F%91%E6%95%B0">6.2.7 在网络模型中限定用户的请求并发数</h4>
+<pre class="hljs"><code><div>1. 我们在上一个实验的基础上，在 node0 中编写并发脚本测试
+[root@node1 ~]<span class="hljs-comment"># iptables -vnL</span>
+Chain INPUT (policy ACCEPT 131 packets, 10318 bytes)
+ pkts bytes target     prot opt <span class="hljs-keyword">in</span>     out     <span class="hljs-built_in">source</span>               destination         
+
+Chain FORWARD (policy ACCEPT 0 packets, 0 bytes)
+ pkts bytes target     prot opt <span class="hljs-keyword">in</span>     out     <span class="hljs-built_in">source</span>               destination         
+   32  5464 REJECT     tcp  --  *      *       0.0.0.0/0            0.0.0.0/0            STRING match  <span class="hljs-string">"google"</span> ALGO name bm TO 65535 reject-with icmp-port-unreachable
+ 1500  135K ACCEPT     all  --  *      *       0.0.0.0/0            0.0.0.0/0            state RELATED,ESTABLISHED
+  167 10020 WEBLIM     all  --  *      *       0.0.0.0/0            0.0.0.0/0           
+    4   336 ACCEPT     icmp --  *      *       10.20.0.0/16         0.0.0.0/0            icmptype 8
+    3   252 ACCEPT     icmp --  *      *       0.0.0.0/0            10.20.0.0/16         icmptype 0
+  142  8520 ACCEPT     tcp  --  *      *       192.168.10.0/24      0.0.0.0/0            multiport dports 80,443
+    8   624 REJECT     all  --  *      *       0.0.0.0/0            0.0.0.0/0            reject-with icmp-port-unreachable
+
+Chain OUTPUT (policy ACCEPT 101 packets, 12936 bytes)
+ pkts bytes target     prot opt <span class="hljs-keyword">in</span>     out     <span class="hljs-built_in">source</span>               destination         
+
+Chain WEBLIM (1 references)
+ pkts bytes target     prot opt <span class="hljs-keyword">in</span>     out     <span class="hljs-built_in">source</span>               destination         
+    1    60 REJECT     tcp  --  *      *       0.0.0.0/0            0.0.0.0/0            tcp dpt:80 <span class="hljs-built_in">source</span> IP range 10.20.100.100-10.20.100.150 reject-with icmp-port-unreachable
+   21  1260 ACCEPT     tcp  --  *      *       10.20.0.0/16         0.0.0.0/0            multiport dports 53,80,443 TIME from 18:00:00 to 22:00:00
+    0     0 ACCEPT     tcp  --  *      *       10.20.0.0/16         0.0.0.0/0            tcp dpt:53 TIME from 18:00:00 to 22:00:00
+[root@node1 ~]<span class="hljs-comment"># </span>
+[root@node1 ~]<span class="hljs-comment">#</span>
+
+测试并发，结果正常，全部请求均响应
+[root@node0 ~]<span class="hljs-comment"># ab -c 9 -n 20 http://10.20.100.103/</span>
+This is ApacheBench, Version 2.3 &lt;<span class="hljs-variable">$Revision</span>: 1430300 $&gt;
+Copyright 1996 Adam Twiss, Zeus Technology Ltd, http://www.zeustech.net/
+Licensed to The Apache Software Foundation, http://www.apache.org/
+
+Benchmarking 10.20.100.103 (be patient)...apr_socket_recv: Connection refused (111)
+Total of 1 requests completed
+[root@node0 ~]<span class="hljs-comment"># ab -c 10 -n 200 http://10.20.100.103/</span>
+This is ApacheBench, Version 2.3 &lt;<span class="hljs-variable">$Revision</span>: 1430300 $&gt;
+Copyright 1996 Adam Twiss, Zeus Technology Ltd, http://www.zeustech.net/
+Licensed to The Apache Software Foundation, http://www.apache.org/
+
+Benchmarking 10.20.100.103 (be patient)
+Completed 100 requests
+Completed 200 requests
+Finished 200 requests
+
+
+Server Software:        Apache/2.4.6
+Server Hostname:        10.20.100.103
+Server Port:            80
+
+Document Path:          /
+Document Length:        21 bytes
+
+Concurrency Level:      10
+Time taken <span class="hljs-keyword">for</span> tests:   0.104 seconds
+Complete requests:      200
+Failed requests:        0
+Write errors:           0
+Total transferred:      56200 bytes
+HTML transferred:       4200 bytes
+Requests per second:    1919.94 [<span class="hljs-comment">#/sec] (mean)</span>
+Time per request:       5.208 [ms] (mean)
+Time per request:       0.521 [ms] (mean, across all concurrent requests)
+Transfer rate:          526.86 [Kbytes/sec] received
+
+Connection Times (ms)
+              min  mean[+/-sd] median   max
+Connect:        0    1   1.4      1       6
+Processing:     1    4   1.6      3      13
+Waiting:        1    3   1.6      3      13
+Total:          2    5   2.5      4      16
+
+Percentage of the requests served within a certain time (ms)
+  50%      4
+  66%      5
+  75%      5
+  80%      6
+  90%     10
+  95%     10
+  98%     11
+  99%     16
+ 100%     16 (longest request)
+[root@node0 ~]<span class="hljs-comment"># </span>
+[root@node0 ~]<span class="hljs-comment"># </span>
+
+
+2. 添加并发限制规则，然后测试
+[root@node1 ~]<span class="hljs-comment"># </span>
+[root@node1 ~]<span class="hljs-comment"># iptables -I WEBLIM -d 10.20.100.0/16 -p tcp --dport 80 -m connlimit --connlimit-above 8 -j REJECT</span>
+[root@node1 ~]<span class="hljs-comment"># </span>
+[root@node1 ~]<span class="hljs-comment"># iptables -vnL</span>
+Chain INPUT (policy ACCEPT 21 packets, 1620 bytes)
+ pkts bytes target     prot opt <span class="hljs-keyword">in</span>     out     <span class="hljs-built_in">source</span>               destination         
+
+Chain FORWARD (policy ACCEPT 0 packets, 0 bytes)
+ pkts bytes target     prot opt <span class="hljs-keyword">in</span>     out     <span class="hljs-built_in">source</span>               destination         
+   32  5464 REJECT     tcp  --  *      *       0.0.0.0/0            0.0.0.0/0            STRING match  <span class="hljs-string">"google"</span> ALGO name bm TO 65535 reject-with icmp-port-unreachable
+ 1500  135K ACCEPT     all  --  *      *       0.0.0.0/0            0.0.0.0/0            state RELATED,ESTABLISHED
+  167 10020 WEBLIM     all  --  *      *       0.0.0.0/0            0.0.0.0/0           
+    4   336 ACCEPT     icmp --  *      *       10.20.0.0/16         0.0.0.0/0            icmptype 8
+    3   252 ACCEPT     icmp --  *      *       0.0.0.0/0            10.20.0.0/16         icmptype 0
+  142  8520 ACCEPT     tcp  --  *      *       192.168.10.0/24      0.0.0.0/0            multiport dports 80,443
+    8   624 REJECT     all  --  *      *       0.0.0.0/0            0.0.0.0/0            reject-with icmp-port-unreachable
+
+Chain OUTPUT (policy ACCEPT 16 packets, 1536 bytes)
+ pkts bytes target     prot opt <span class="hljs-keyword">in</span>     out     <span class="hljs-built_in">source</span>               destination         
+
+Chain WEBLIM (1 references)
+ pkts bytes target     prot opt <span class="hljs-keyword">in</span>     out     <span class="hljs-built_in">source</span>               destination         
+    0     0 REJECT     tcp  --  *      *       0.0.0.0/0            10.20.0.0/16         tcp dpt:80 <span class="hljs-comment">#conn src/32 &gt; 8 reject-with icmp-port-unreachable</span>
+    1    60 REJECT     tcp  --  *      *       0.0.0.0/0            0.0.0.0/0            tcp dpt:80 <span class="hljs-built_in">source</span> IP range 10.20.100.100-10.20.100.150 reject-with icmp-port-unreachable
+   21  1260 ACCEPT     tcp  --  *      *       10.20.0.0/16         0.0.0.0/0            multiport dports 53,80,443 TIME from 18:00:00 to 22:00:00
+    0     0 ACCEPT     tcp  --  *      *       10.20.0.0/16         0.0.0.0/0            tcp dpt:53 TIME from 18:00:00 to 22:00:00
+[root@node1 ~]<span class="hljs-comment"># </span>
+
+
+
+
+并发数大于 8 ，请求拒绝
+[root@node0 ~]<span class="hljs-comment"># ab -c 10 -n 200 http://10.20.100.103/</span>
+This is ApacheBench, Version 2.3 &lt;<span class="hljs-variable">$Revision</span>: 1430300 $&gt;
+Copyright 1996 Adam Twiss, Zeus Technology Ltd, http://www.zeustech.net/
+Licensed to The Apache Software Foundation, http://www.apache.org/
+
+Benchmarking 10.20.100.103 (be patient)
+apr_socket_recv: Connection refused (111)
+Total of 1 requests completed
+[root@node0 ~]<span class="hljs-comment">#</span>
+[root@node0 ~]<span class="hljs-comment">#</span>
+[root@node0 ~]<span class="hljs-comment">#</span>
+[root@node0 ~]<span class="hljs-comment">#</span>
+
+减小并发数，访问成功
+[root@node0 ~]<span class="hljs-comment">#</span>
+[root@node0 ~]<span class="hljs-comment">#</span>
+[root@node0 ~]<span class="hljs-comment"># ab -c 2 -n 200 http://10.20.100.103/</span>
+This is ApacheBench, Version 2.3 &lt;<span class="hljs-variable">$Revision</span>: 1430300 $&gt;
+Copyright 1996 Adam Twiss, Zeus Technology Ltd, http://www.zeustech.net/
+Licensed to The Apache Software Foundation, http://www.apache.org/
+
+Benchmarking 10.20.100.103 (be patient)
+Completed 100 requests
+Completed 200 requests
+Finished 200 requests
+
+
+Server Software:        Apache/2.4.6
+Server Hostname:        10.20.100.103
+Server Port:            80
+
+Document Path:          /
+Document Length:        21 bytes
+
+Concurrency Level:      2
+Time taken <span class="hljs-keyword">for</span> tests:   0.137 seconds
+Complete requests:      200
+Failed requests:        0
+Write errors:           0
+Total transferred:      56200 bytes
+HTML transferred:       4200 bytes
+Requests per second:    1461.77 [<span class="hljs-comment">#/sec] (mean)</span>
+Time per request:       1.368 [ms] (mean)
+Time per request:       0.684 [ms] (mean, across all concurrent requests)
+Transfer rate:          401.13 [Kbytes/sec] received
+
+Connection Times (ms)
+              min  mean[+/-sd] median   max
+Connect:        0    0   0.5      0       4
+Processing:     0    1   0.4      1       4
+Waiting:        0    1   0.5      0       4
+Total:          1    1   0.9      1       6
+ERROR: The median and mean <span class="hljs-keyword">for</span> the waiting time are more than twice the standard
+       deviation apart. These results are NOT reliable.
+
+Percentage of the requests served within a certain time (ms)
+  50%      1
+  66%      1
+  75%      1
+  80%      1
+  90%      2
+  95%      3
+  98%      5
+  99%      6
+ 100%      6 (longest request)
+[root@node0 ~]<span class="hljs-comment"># </span>
+[root@node0 ~]<span class="hljs-comment">#</span>
+
+</div></code></pre>
+<h4 id="628-%E5%9C%A8%E7%BD%91%E7%BB%9C%E6%A8%A1%E5%9E%8B%E4%B8%AD%E5%BC%80%E5%90%AF%E5%A4%96%E7%BD%91%E8%AE%BF%E9%97%AE%E5%86%85%E7%BD%91-ftp-%E6%9C%8D%E5%8A%A1%E8%BF%9E%E6%8E%A5%E8%BF%BD%E8%B8%AA%E5%8A%9F%E8%83%BD">6.2.8 在网络模型中开启外网访问内网 ftp 服务连接追踪功能</h4>
+<pre class="hljs"><code><div>1. 我们在 node2 中安装 vsftpd 服务并启动
+[root@node2 ~]<span class="hljs-comment"># </span>
+[root@node2 ~]<span class="hljs-comment"># yum install vsftpd -y </span>
+Loaded plugins: fastestmirror
+Loading mirror speeds from cached hostfile
+Package vsftpd-3.0.2-25.el7.x86_64 already installed and latest version
+Nothing to <span class="hljs-keyword">do</span>
+[root@node2 ~]<span class="hljs-comment"># </span>
+[root@node2 ~]<span class="hljs-comment"># systemctl start vsftpd</span>
+[root@node2 ~]<span class="hljs-comment">#  </span>
+[root@node2 ~]<span class="hljs-comment"># echo vsftpd &gt; /var/ftp/pub/file.txt</span>
+[root@node2 ~]<span class="hljs-comment">#</span>
+
+
+2. 在上一个实验的基础上，我们修改一下防火墙规则，允许 ftp 的 21 号端口报文通过
+[root@node1 ~]<span class="hljs-comment"># </span>
+[root@node1 ~]<span class="hljs-comment"># iptables -I FORWARD 3 -p tcp --dport 21 -j ACCEPT</span>
+[root@node1 ~]<span class="hljs-comment"># </span>
+[root@node1 ~]<span class="hljs-comment"># iptables -vnL</span>
+Chain INPUT (policy ACCEPT 23 packets, 1700 bytes)
+ pkts bytes target     prot opt <span class="hljs-keyword">in</span>     out     <span class="hljs-built_in">source</span>               destination         
+
+Chain FORWARD (policy ACCEPT 0 packets, 0 bytes)
+ pkts bytes target     prot opt <span class="hljs-keyword">in</span>     out     <span class="hljs-built_in">source</span>               destination         
+   32  5464 REJECT     tcp  --  *      *       0.0.0.0/0            0.0.0.0/0            STRING match  <span class="hljs-string">"google"</span> ALGO name bm TO 65535 reject-with icmp-port-unreachable
+66530 6166K ACCEPT     all  --  *      *       0.0.0.0/0            0.0.0.0/0            state RELATED,ESTABLISHED
+    0     0 ACCEPT     tcp  --  *      *       0.0.0.0/0            0.0.0.0/0            tcp dpt:21
+ 7460  448K WEBLIM     all  --  *      *       0.0.0.0/0            0.0.0.0/0           
+    4   336 ACCEPT     icmp --  *      *       10.20.0.0/16         0.0.0.0/0            icmptype 8
+    3   252 ACCEPT     icmp --  *      *       0.0.0.0/0            10.20.0.0/16         icmptype 0
+ 7395  444K ACCEPT     tcp  --  *      *       192.168.10.0/24      0.0.0.0/0            multiport dports 80,443
+    8   624 REJECT     all  --  *      *       0.0.0.0/0            0.0.0.0/0            reject-with icmp-port-unreachable
+
+Chain OUTPUT (policy ACCEPT 16 packets, 1536 bytes)
+ pkts bytes target     prot opt <span class="hljs-keyword">in</span>     out     <span class="hljs-built_in">source</span>               destination         
+
+Chain WEBLIM (1 references)
+ pkts bytes target     prot opt <span class="hljs-keyword">in</span>     out     <span class="hljs-built_in">source</span>               destination         
+    6   360 REJECT     tcp  --  *      *       0.0.0.0/0            10.20.0.0/16         tcp dpt:80 <span class="hljs-comment">#conn src/32 &gt; 8 reject-with icmp-port-unreachable</span>
+    1    60 REJECT     tcp  --  *      *       0.0.0.0/0            0.0.0.0/0            tcp dpt:80 <span class="hljs-built_in">source</span> IP range 10.20.100.100-10.20.100.150 reject-with icmp-port-unreachable
+   21  1260 ACCEPT     tcp  --  *      *       10.20.0.0/16         0.0.0.0/0            multiport dports 53,80,443 TIME from 18:00:00 to 22:00:00
+    0     0 ACCEPT     tcp  --  *      *       10.20.0.0/16         0.0.0.0/0            tcp dpt:53 TIME from 18:00:00 to 22:00:00
+[root@node1 ~]<span class="hljs-comment"># </span>
+[root@node1 ~]<span class="hljs-comment">#</span>
+
+加载 ftp 追踪模块
+[root@node1 ~]<span class="hljs-comment"># lsmod | grep nf_conntrack_ftp</span>
+[root@node1 ~]<span class="hljs-comment"># </span>
+[root@node1 ~]<span class="hljs-comment"># </span>
+[root@node1 ~]<span class="hljs-comment"># modprobe nf_conntrack_ftp</span>
+[root@node1 ~]<span class="hljs-comment"># </span>
+[root@node1 ~]<span class="hljs-comment"># </span>
+[root@node1 ~]<span class="hljs-comment"># lsmod | grep nf_conntrack_ftp</span>
+nf_conntrack_ftp       18638  0 
+nf_conntrack          133095  6 nf_nat,xt_connlimit,nf_nat_ipv4,xt_conntrack,nf_conntrack_ftp,nf_conntrack_ipv4
+[root@node1 ~]<span class="hljs-comment"># </span>
+[root@node1 ~]<span class="hljs-comment">#</span>
+
+
+连接成功，可以正常使用
+[root@node0 ~]<span class="hljs-comment"># </span>
+[root@node0 ~]<span class="hljs-comment"># lftp 10.20.100.103</span>
+lftp 10.20.100.103:~&gt; ls
+drwxr-xr-x    2 0        0              22 Aug 04 09:12 pub
+lftp 10.20.100.103:/&gt; 
+lftp 10.20.100.103:/&gt; 
+lftp 10.20.100.103:/&gt; <span class="hljs-built_in">cd</span> pub/
+lftp 10.20.100.103:/pub&gt; 
+lftp 10.20.100.103:/pub&gt; 
+lftp 10.20.100.103:/pub&gt; 
+lftp 10.20.100.103:/pub&gt; ls
+-rw-r--r--    1 0        0               7 Aug 04 09:13 file.txt
+lftp 10.20.100.103:/pub&gt; 
+lftp 10.20.100.103:/pub&gt; 
+lftp 10.20.100.103:/pub&gt; get file.txt 
+7 bytes transferred
+lftp 10.20.100.103:/pub&gt; 
+lftp 10.20.100.103:/pub&gt; <span class="hljs-built_in">exit</span>
+[root@node0 ~]<span class="hljs-comment"># </span>
+[root@node0 ~]<span class="hljs-comment"># </span>
+[root@node0 ~]<span class="hljs-comment"># cat file.txt </span>
+vsftpd
+[root@node0 ~]<span class="hljs-comment"># </span>
+[root@node0 ~]<span class="hljs-comment"># </span>
+[root@node0 ~]<span class="hljs-comment">#</span>
+
+
+综上所述，开启 ftp 功能需要在 防火墙上开放 21 号端口，启用 related 状态连接，加载 nf_conntrack_ftp 模块
+
+</div></code></pre>
+<h4 id="629-%E5%9C%A8%E7%BD%91%E7%BB%9C%E6%A8%A1%E5%9E%8B%E4%B8%AD%E5%BC%80%E5%90%AF-iptables-%E6%97%A5%E5%BF%97%E8%AE%B0%E5%BD%95%E5%8A%9F%E8%83%BD">6.2.9 在网络模型中开启 iptables 日志记录功能</h4>
+<pre class="hljs"><code><div>1. 修改 rsyslog 配置文件，添加 iptables 日志存储路径
+[root@node1 ~]<span class="hljs-comment"># </span>
+[root@node1 ~]<span class="hljs-comment"># echo 'kern.warning  /var/log/iptables.log' &gt;&gt; /etc/rsyslog.conf </span>
+[root@node1 ~]<span class="hljs-comment"># </span>
+[root@node1 ~]<span class="hljs-comment"># systemctl restart rsyslog</span>
+[root@node1 ~]<span class="hljs-comment"># </span>
+[root@node1 ~]<span class="hljs-comment">#</span>
+
+
+2. 在上一个实验的基础上添加记录访问 22 号端口的数据包
+[root@node1 ~]<span class="hljs-comment"># </span>
+[root@node1 ~]<span class="hljs-comment"># iptables -I FORWARD -p tcp --dport 22 -j LOG --log-prefix "ALL:"</span>
+[root@node1 ~]<span class="hljs-comment"># </span>
+[root@node1 ~]<span class="hljs-comment"># iptables -R FORWARD 4 -p tcp -m multiport --dports 21,22 -j ACCEPT</span>
+[root@node1 ~]<span class="hljs-comment"># </span>
+[root@node1 ~]<span class="hljs-comment"># iptables -vnL</span>
+Chain INPUT (policy ACCEPT 21 packets, 1620 bytes)
+ pkts bytes target     prot opt <span class="hljs-keyword">in</span>     out     <span class="hljs-built_in">source</span>               destination         
+
+Chain FORWARD (policy ACCEPT 0 packets, 0 bytes)
+ pkts bytes target     prot opt <span class="hljs-keyword">in</span>     out     <span class="hljs-built_in">source</span>               destination         
+    2   120 LOG        tcp  --  *      *       0.0.0.0/0            0.0.0.0/0            tcp dpt:22 LOG flags 0 level 4 prefix <span class="hljs-string">"ALL:"</span>
+   32  5464 REJECT     tcp  --  *      *       0.0.0.0/0            0.0.0.0/0            STRING match  <span class="hljs-string">"google"</span> ALGO name bm TO 65535 reject-with icmp-port-unreachable
+66853 6187K ACCEPT     all  --  *      *       0.0.0.0/0            0.0.0.0/0            state RELATED,ESTABLISHED
+    0     0 ACCEPT     tcp  --  *      *       0.0.0.0/0            0.0.0.0/0            multiport dports 21,22
+ 7464  448K WEBLIM     all  --  *      *       0.0.0.0/0            0.0.0.0/0           
+    4   336 ACCEPT     icmp --  *      *       10.20.0.0/16         0.0.0.0/0            icmptype 8
+    3   252 ACCEPT     icmp --  *      *       0.0.0.0/0            10.20.0.0/16         icmptype 0
+ 7395  444K ACCEPT     tcp  --  *      *       192.168.10.0/24      0.0.0.0/0            multiport dports 80,443
+   12   864 REJECT     all  --  *      *       0.0.0.0/0            0.0.0.0/0            reject-with icmp-port-unreachable
+
+Chain OUTPUT (policy ACCEPT 16 packets, 1536 bytes)
+ pkts bytes target     prot opt <span class="hljs-keyword">in</span>     out     <span class="hljs-built_in">source</span>               destination         
+
+Chain WEBLIM (1 references)
+ pkts bytes target     prot opt <span class="hljs-keyword">in</span>     out     <span class="hljs-built_in">source</span>               destination         
+    6   360 REJECT     tcp  --  *      *       0.0.0.0/0            10.20.0.0/16         tcp dpt:80 <span class="hljs-comment">#conn src/32 &gt; 8 reject-with icmp-port-unreachable</span>
+    1    60 REJECT     tcp  --  *      *       0.0.0.0/0            0.0.0.0/0            tcp dpt:80 <span class="hljs-built_in">source</span> IP range 10.20.100.100-10.20.100.150 reject-with icmp-port-unreachable
+   21  1260 ACCEPT     tcp  --  *      *       10.20.0.0/16         0.0.0.0/0            multiport dports 53,80,443 TIME from 18:00:00 to 22:00:00
+    0     0 ACCEPT     tcp  --  *      *       10.20.0.0/16         0.0.0.0/0            tcp dpt:53 TIME from 18:00:00 to 22:00:00
+[root@node1 ~]<span class="hljs-comment"># </span>
+[root@node1 ~]<span class="hljs-comment"># </span>
+[root@node1 ~]<span class="hljs-comment">#</span>
+
+
+使用 node0 ssh 连接 node2，连接拒绝
+[root@node0 ~]<span class="hljs-comment"># </span>
+[root@node0 ~]<span class="hljs-comment"># ssh 10.20.100.103</span>
+The authenticity of host <span class="hljs-string">'10.20.100.103 (10.20.100.103)'</span> can not be established.
+ECDSA key fingerprint is SHA256:yva0BHZ3k6QIRFJNIme3ANgLwxRfOyxO1KWsYrJ33Nw.
+ECDSA key fingerprint is MD5:d0:1a:a2:1b:39:68:3e:c5:67:c0:d0:ae:23:2d:fe:7c.
+Are you sure you want to <span class="hljs-built_in">continue</span> connecting (yes/no)? yes
+Warning: Permanently added <span class="hljs-string">'10.20.100.103'</span> (ECDSA) to the list of known hosts.
+root@10.20.100.103 is password: 
+Last login: Sun Aug  4 15:24:34 2019 from 10.20.0.1
+[root@node2 ~]<span class="hljs-comment"># </span>
+[root@node2 ~]<span class="hljs-comment"># ls</span>
+anaconda-ks.cfg
+[root@node2 ~]<span class="hljs-comment"># ll</span>
+total 4
+-rw-------. 1 root root 1368 Jun 16 15:09 anaconda-ks.cfg
+[root@node2 ~]<span class="hljs-comment"># exit</span>
+<span class="hljs-built_in">logout</span>
+Connection to 10.20.100.103 closed.
+[root@node0 ~]<span class="hljs-comment">#</span>
+
+node1 中查看日志：
+[root@node1 ~]<span class="hljs-comment"># </span>
+[root@node1 ~]<span class="hljs-comment"># cat   /var/log/iptables.log </span>
+
+Aug  4 21:45:13 node1 kernel: ALL:IN=ens33 OUT=ens37 MAC=00:0c:29:a7:db:80:00:0c:29:c5:14:0d:08:00 SRC=192.168.10.10 DST=10.20.100.103 LEN=60 TOS=0x00 PREC=0x00 TTL=63 ID=11727 DF PROTO=TCP SPT=46286 DPT=22 WINDOW=29200 RES=0x00 SYN URGP=0 
+Aug  4 21:45:13 node1 kernel: ALL:IN=ens33 OUT=ens37 MAC=00:0c:29:a7:db:80:00:0c:29:c5:14:0d:08:00 SRC=192.168.10.10 DST=10.20.100.103 LEN=52 TOS=0x00 PREC=0x00 TTL=63 ID=11728 DF PROTO=TCP SPT=46286 DPT=22 WINDOW=229 RES=0x00 ACK URGP=0 
+.
+.省略部分日志信息.......
+. 
+Aug  4 21:45:22 node1 kernel: ALL:IN=ens33 OUT=ens37 MAC=00:0c:29:a7:db:80:00:0c:29:c5:14:0d:08:00 SRC=192.168.10.10 DST=10.20.100.103 LEN=52 TOS=0x10 PREC=0x00 TTL=63 ID=11778 DF PROTO=TCP SPT=46286 DPT=22 WINDOW=331 RES=0x00 ACK FIN URGP=0 
+Aug  4 21:45:22 node1 kernel: ALL:IN=ens33 OUT=ens37 MAC=00:0c:29:a7:db:80:00:0c:29:c5:14:0d:08:00 SRC=192.168.10.10 DST=10.20.100.103 LEN=52 TOS=0x10 PREC=0x00 TTL=63 ID=11400 DF PROTO=TCP SPT=46286 DPT=22 WINDOW=331 RES=0x00 ACK URGP=0 
+[root@node1 ~]<span class="hljs-comment"># </span>
+[root@node1 ~]<span class="hljs-comment"># </span>
+
+</div></code></pre>
+<h4 id="6210-iptables-%E8%A7%84%E5%88%99%E8%AE%BE%E7%BD%AE%E5%BB%BA%E8%AE%AE">6.2.10 iptables 规则设置建议</h4>
+<pre class="hljs"><code><div>任何不允许的访问，应该在请求到达时给予拒绝   
+规则在链接上的次序即为其检查时的生效次序 
+
+基于上述，规则优化： 
+1. 安全放行所有入站和出站的状态为 ESTABLISHED 状态连接 
+2. 谨慎放行入站的新请求 
+3. 有特殊目的限制访问功能，要在放行规则之前加以拒绝 
+4. 同类规则（访问同一应用），匹配范围小的放在前面，用于特殊处理 
+5. 不同类的规则（访问不同应用），匹配范围大的放在前面 
+6. 应该将那些可由一条规则能够描述的多个规则合并为一条 
+7. 设置默认策略，建议白名单（只放行特定连接）  
+8. iptables -P，不建议使用，建议在规则的最后定义规则做为默认策略 
+</div></code></pre>
+
+</body>
+</html>

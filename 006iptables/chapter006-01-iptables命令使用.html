@@ -1,0 +1,1361 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>chapter006-01-iptables命令使用.md</title>
+<meta http-equiv="Content-type" content="text/html;charset=UTF-8">
+
+<style>
+/*---------------------------------------------------------------------------------------------
+ *  Copyright (c) Microsoft Corporation. All rights reserved.
+ *  Licensed under the MIT License. See License.txt in the project root for license information.
+ *--------------------------------------------------------------------------------------------*/
+
+body {
+	font-family: "Segoe WPC", "Segoe UI", "SFUIText-Light", "HelveticaNeue-Light", sans-serif, "Droid Sans Fallback";
+	font-size: 14px;
+	padding: 0 12px;
+	line-height: 22px;
+	word-wrap: break-word;
+}
+
+#code-csp-warning {
+	position: fixed;
+	top: 0;
+	right: 0;
+	color: white;
+	margin: 16px;
+	text-align: center;
+	font-size: 12px;
+	font-family: sans-serif;
+	background-color:#444444;
+	cursor: pointer;
+	padding: 6px;
+	box-shadow: 1px 1px 1px rgba(0,0,0,.25);
+}
+
+#code-csp-warning:hover {
+	text-decoration: none;
+	background-color:#007acc;
+	box-shadow: 2px 2px 2px rgba(0,0,0,.25);
+}
+
+
+body.scrollBeyondLastLine {
+	margin-bottom: calc(100vh - 22px);
+}
+
+body.showEditorSelection .code-line {
+	position: relative;
+}
+
+body.showEditorSelection .code-active-line:before,
+body.showEditorSelection .code-line:hover:before {
+	content: "";
+	display: block;
+	position: absolute;
+	top: 0;
+	left: -12px;
+	height: 100%;
+}
+
+body.showEditorSelection li.code-active-line:before,
+body.showEditorSelection li.code-line:hover:before {
+	left: -30px;
+}
+
+.vscode-light.showEditorSelection .code-active-line:before {
+	border-left: 3px solid rgba(0, 0, 0, 0.15);
+}
+
+.vscode-light.showEditorSelection .code-line:hover:before {
+	border-left: 3px solid rgba(0, 0, 0, 0.40);
+}
+
+.vscode-dark.showEditorSelection .code-active-line:before {
+	border-left: 3px solid rgba(255, 255, 255, 0.4);
+}
+
+.vscode-dark.showEditorSelection .code-line:hover:before {
+	border-left: 3px solid rgba(255, 255, 255, 0.60);
+}
+
+.vscode-high-contrast.showEditorSelection .code-active-line:before {
+	border-left: 3px solid rgba(255, 160, 0, 0.7);
+}
+
+.vscode-high-contrast.showEditorSelection .code-line:hover:before {
+	border-left: 3px solid rgba(255, 160, 0, 1);
+}
+
+img {
+	max-width: 100%;
+	max-height: 100%;
+}
+
+a {
+	color: #4080D0;
+	text-decoration: none;
+}
+
+a:focus,
+input:focus,
+select:focus,
+textarea:focus {
+	outline: 1px solid -webkit-focus-ring-color;
+	outline-offset: -1px;
+}
+
+hr {
+	border: 0;
+	height: 2px;
+	border-bottom: 2px solid;
+}
+
+h1 {
+	padding-bottom: 0.3em;
+	line-height: 1.2;
+	border-bottom-width: 1px;
+	border-bottom-style: solid;
+}
+
+h1, h2, h3 {
+	font-weight: normal;
+}
+
+h1 code,
+h2 code,
+h3 code,
+h4 code,
+h5 code,
+h6 code {
+	font-size: inherit;
+	line-height: auto;
+}
+
+a:hover {
+	color: #4080D0;
+	text-decoration: underline;
+}
+
+table {
+	border-collapse: collapse;
+}
+
+table > thead > tr > th {
+	text-align: left;
+	border-bottom: 1px solid;
+}
+
+table > thead > tr > th,
+table > thead > tr > td,
+table > tbody > tr > th,
+table > tbody > tr > td {
+	padding: 5px 10px;
+}
+
+table > tbody > tr + tr > td {
+	border-top: 1px solid;
+}
+
+blockquote {
+	margin: 0 7px 0 5px;
+	padding: 0 16px 0 10px;
+	border-left: 5px solid;
+}
+
+code {
+	font-family: Menlo, Monaco, Consolas, "Droid Sans Mono", "Courier New", monospace, "Droid Sans Fallback";
+	font-size: 14px;
+	line-height: 19px;
+}
+
+body.wordWrap pre {
+	white-space: pre-wrap;
+}
+
+.mac code {
+	font-size: 12px;
+	line-height: 18px;
+}
+
+pre:not(.hljs),
+pre.hljs code > div {
+	padding: 16px;
+	border-radius: 3px;
+	overflow: auto;
+}
+
+/** Theming */
+
+.vscode-light,
+.vscode-light pre code {
+	color: rgb(30, 30, 30);
+}
+
+.vscode-dark,
+.vscode-dark pre code {
+	color: #DDD;
+}
+
+.vscode-high-contrast,
+.vscode-high-contrast pre code {
+	color: white;
+}
+
+.vscode-light code {
+	color: #A31515;
+}
+
+.vscode-dark code {
+	color: #D7BA7D;
+}
+
+.vscode-light pre:not(.hljs),
+.vscode-light code > div {
+	background-color: rgba(220, 220, 220, 0.4);
+}
+
+.vscode-dark pre:not(.hljs),
+.vscode-dark code > div {
+	background-color: rgba(10, 10, 10, 0.4);
+}
+
+.vscode-high-contrast pre:not(.hljs),
+.vscode-high-contrast code > div {
+	background-color: rgb(0, 0, 0);
+}
+
+.vscode-high-contrast h1 {
+	border-color: rgb(0, 0, 0);
+}
+
+.vscode-light table > thead > tr > th {
+	border-color: rgba(0, 0, 0, 0.69);
+}
+
+.vscode-dark table > thead > tr > th {
+	border-color: rgba(255, 255, 255, 0.69);
+}
+
+.vscode-light h1,
+.vscode-light hr,
+.vscode-light table > tbody > tr + tr > td {
+	border-color: rgba(0, 0, 0, 0.18);
+}
+
+.vscode-dark h1,
+.vscode-dark hr,
+.vscode-dark table > tbody > tr + tr > td {
+	border-color: rgba(255, 255, 255, 0.18);
+}
+
+.vscode-light blockquote,
+.vscode-dark blockquote {
+	background: rgba(127, 127, 127, 0.1);
+	border-color: rgba(0, 122, 204, 0.5);
+}
+
+.vscode-high-contrast blockquote {
+	background: transparent;
+	border-color: #fff;
+}
+</style>
+
+<style>
+/* Tomorrow Theme */
+/* http://jmblog.github.com/color-themes-for-google-code-highlightjs */
+/* Original theme - https://github.com/chriskempson/tomorrow-theme */
+
+/* Tomorrow Comment */
+.hljs-comment,
+.hljs-quote {
+	color: #8e908c;
+}
+
+/* Tomorrow Red */
+.hljs-variable,
+.hljs-template-variable,
+.hljs-tag,
+.hljs-name,
+.hljs-selector-id,
+.hljs-selector-class,
+.hljs-regexp,
+.hljs-deletion {
+	color: #c82829;
+}
+
+/* Tomorrow Orange */
+.hljs-number,
+.hljs-built_in,
+.hljs-builtin-name,
+.hljs-literal,
+.hljs-type,
+.hljs-params,
+.hljs-meta,
+.hljs-link {
+	color: #f5871f;
+}
+
+/* Tomorrow Yellow */
+.hljs-attribute {
+	color: #eab700;
+}
+
+/* Tomorrow Green */
+.hljs-string,
+.hljs-symbol,
+.hljs-bullet,
+.hljs-addition {
+	color: #718c00;
+}
+
+/* Tomorrow Blue */
+.hljs-title,
+.hljs-section {
+	color: #4271ae;
+}
+
+/* Tomorrow Purple */
+.hljs-keyword,
+.hljs-selector-tag {
+	color: #8959a8;
+}
+
+.hljs {
+	display: block;
+	overflow-x: auto;
+	color: #4d4d4c;
+	padding: 0.5em;
+}
+
+.hljs-emphasis {
+	font-style: italic;
+}
+
+.hljs-strong {
+	font-weight: bold;
+}
+</style>
+
+<style>
+/*
+ * Markdown PDF CSS
+ */
+
+ body {
+	font-family:  "Meiryo", "Segoe WPC", "Segoe UI", "SFUIText-Light", "HelveticaNeue-Light", sans-serif, "Droid Sans Fallback";
+}
+
+pre {
+	background-color: #f8f8f8;
+	border: 1px solid #cccccc;
+	border-radius: 3px;
+	overflow-x: auto;
+	white-space: pre-wrap;
+	overflow-wrap: break-word;
+}
+
+pre:not(.hljs) {
+	padding: 23px;
+	line-height: 19px;
+}
+
+blockquote {
+	background: rgba(127, 127, 127, 0.1);
+	border-color: rgba(0, 122, 204, 0.5);
+}
+
+.emoji {
+	height: 1.4em;
+}
+
+/* for inline code */
+:not(pre):not(.hljs) > code {
+	color: #C9AE75; /* Change the old color so it seems less like an error */
+	font-size: inherit;
+}
+
+/* Page Break : use <div class="page"/> to insert page break
+-------------------------------------------------------- */
+.page {
+	page-break-after: always;
+}
+
+</style>
+
+</head>
+<body>
+<h2 id="%E7%AC%AC%E5%85%AD%E7%AB%A0-linux-%E9%98%B2%E7%81%AB%E5%A2%99%E9%85%8D%E7%BD%AE%E4%B8%8E%E7%AE%A1%E7%90%86">第六章 Linux 防火墙配置与管理</h2>
+<h3 id="%E7%AC%AC%E4%B8%80%E8%8A%82-iptables-%E5%91%BD%E4%BB%A4%E5%9F%BA%E6%9C%AC%E4%BD%BF%E7%94%A8">第一节  iptables 命令基本使用</h3>
+<p>   Linux 内核的网络功能模块中有 5 个钩子函数，在内核的 5 个钩子函数中配置特定的规则，我们可以实现防火墙功能。<br>
+而 iptables 和 firewalld 分别是配置这些规则的软件工具。下面我们介绍一下 iptables 命令的基础用法。</p>
+<h4 id="611-centos76-%E4%B8%AD%E9%BB%98%E8%AE%A4%E4%BD%BF%E7%94%A8%E7%9A%84%E9%98%B2%E7%81%AB%E5%A2%99%E8%A7%84%E5%88%99%E9%85%8D%E7%BD%AE%E7%AE%A1%E7%90%86%E5%B7%A5%E5%85%B7">6.1.1 CentOS7.6 中默认使用的防火墙规则配置管理工具</h4>
+<p>   在 CentOS7.6 中 iptables 命令工具和 firewalld 的服务都默认已经安装，下面我们卸载掉 firewalld 命令，使用 iptables 实现<br>
+防火墙规则的配置。</p>
+<pre class="hljs"><code><div>[root@node1 ~]<span class="hljs-comment"># </span>
+[root@node1 ~]<span class="hljs-comment"># ip a</span>
+1: lo: &lt;LOOPBACK,UP,LOWER_UP&gt; mtu 65536 qdisc noqueue state UNKNOWN group default qlen 1000
+    link/loopback 00:00:00:00:00:00 brd 00:00:00:00:00:00
+    inet 127.0.0.1/8 scope host lo
+       valid_lft forever preferred_lft forever
+    inet6 ::1/128 scope host 
+       valid_lft forever preferred_lft forever
+2: ens33: &lt;BROADCAST,MULTICAST,UP,LOWER_UP&gt; mtu 1500 qdisc pfifo_fast state UP group default qlen 1000
+    link/ether 00:0c:29:ff:fa:82 brd ff:ff:ff:ff:ff:ff
+    inet 192.168.130.132/24 brd 192.168.130.255 scope global noprefixroute dynamic ens33
+       valid_lft 681820sec preferred_lft 681820sec
+    inet6 fe80::996f:893f:c27d:f8d8/64 scope link noprefixroute 
+       valid_lft forever preferred_lft forever
+[root@node1 ~]<span class="hljs-comment"># </span>
+[root@node1 ~]<span class="hljs-comment"># </span>
+[root@node1 ~]<span class="hljs-comment"># setenforce 0</span>
+[root@node1 ~]<span class="hljs-comment"># </span>
+[root@node1 ~]<span class="hljs-comment"># getenforce </span>
+Permissive
+[root@node1 ~]<span class="hljs-comment">#  </span>
+[root@node1 ~]<span class="hljs-comment"># yum list firewalld</span>
+Loaded plugins: fastestmirror
+Loading mirror speeds from cached hostfile
+ * base: mirrors.huaweicloud.com
+ * extras: mirror.bit.edu.cn
+ * updates: mirror.jdcloud.com
+Installed Packages
+firewalld.noarch                            0.5.3-5.el7                             @anaconda
+[root@node1 ~]<span class="hljs-comment"># </span>
+[root@node1 ~]<span class="hljs-comment"># </span>
+[root@node1 ~]<span class="hljs-comment"># yum list iptables</span>
+Loaded plugins: fastestmirror
+Loading mirror speeds from cached hostfile
+ * base: mirrors.huaweicloud.com
+ * extras: mirror.bit.edu.cn
+ * updates: mirror.jdcloud.com
+Installed Packages
+iptables.x86_64                            1.4.21-28.el7                            @anaconda
+Available Packages
+iptables.i686                              1.4.21-28.el7                            base     
+[root@node1 ~]<span class="hljs-comment"># </span>
+[root@node1 ~]<span class="hljs-comment">#</span>
+[root@node1 ~]<span class="hljs-comment"># </span>
+[root@node1 ~]<span class="hljs-comment"># yum remove firewalld</span>
+Loaded plugins: fastestmirror
+Resolving Dependencies
+--&gt; Running transaction check
+---&gt; Package firewalld.noarch 0:0.5.3-5.el7 will be erased
+--&gt; Finished Dependency Resolution
+
+Dependencies Resolved
+
+=============================================================================================
+ Package              Arch              Version                   Repository            Size
+=============================================================================================
+Removing:
+ firewalld            noarch            0.5.3-5.el7               @anaconda            1.8 M
+
+Transaction Summary
+=============================================================================================
+Remove  1 Package
+
+Installed size: 1.8 M
+Is this ok [y/N]: y
+Downloading packages:
+Running transaction check
+Running transaction <span class="hljs-built_in">test</span>
+Transaction <span class="hljs-built_in">test</span> succeeded
+Running transaction
+  Erasing    : firewalld-0.5.3-5.el7.noarch                                              1/1 
+  Verifying  : firewalld-0.5.3-5.el7.noarch                                              1/1 
+
+Removed:
+  firewalld.noarch 0:0.5.3-5.el7                                                             
+
+Complete!
+[root@node1 ~]<span class="hljs-comment">#</span>
+[root@node1 ~]<span class="hljs-comment">#</span>
+</div></code></pre>
+<h4 id="612-iptables-%E4%B8%AD%E9%93%BE%E5%92%8C%E8%A1%A8%E7%9A%84%E6%A6%82%E5%BF%B5">6.1.2 iptables 中链和表的概念</h4>
+<p>  文章一开始，我们已经讲过，Linux 防火墙的功能是通过在内核网络模块中五个对应的钩子函数中配置对应的网络数据包规则实现的。<br>
+每个钩子函数都可以配置多条规则，我们把这种在钩子函数中配置的多条 记录规则的集合 称为 链 ， 内核中目前一共有 5 个链，分别是<br>
+PREROUTING，INPUT， OUTPUT， FORWARD, POSTROUTING。为了实现特定的防火墙功能，iptables 将该功能所依赖的链的组合称为 表，<br>
+目前 iptables 中定义了5个表，分别是 filter， nat， mangle， raw， security。下面我们使用 iptables 的 -vnL 选项 和 -t 选项查看每个表所涉<br>
+及的链, 默认情况下不使 -t 选项则默认代表 filter 表。</p>
+<pre class="hljs"><code><div>[root@node1 ~]<span class="hljs-comment"># iptables -vnL</span>
+Chain INPUT (policy ACCEPT 1548 packets, 134K bytes)
+ pkts bytes target     prot opt <span class="hljs-keyword">in</span>     out     <span class="hljs-built_in">source</span>               destination         
+
+Chain FORWARD (policy ACCEPT 0 packets, 0 bytes)
+ pkts bytes target     prot opt <span class="hljs-keyword">in</span>     out     <span class="hljs-built_in">source</span>               destination         
+
+Chain OUTPUT (policy ACCEPT 1062 packets, 209K bytes)
+ pkts bytes target     prot opt <span class="hljs-keyword">in</span>     out     <span class="hljs-built_in">source</span>               destination         
+[root@node1 ~]<span class="hljs-comment"># </span>
+[root@node1 ~]<span class="hljs-comment"># </span>
+[root@node1 ~]<span class="hljs-comment"># iptables -t filter -vnL</span>
+Chain INPUT (policy ACCEPT 1615 packets, 139K bytes)
+ pkts bytes target     prot opt <span class="hljs-keyword">in</span>     out     <span class="hljs-built_in">source</span>               destination         
+
+Chain FORWARD (policy ACCEPT 0 packets, 0 bytes)
+ pkts bytes target     prot opt <span class="hljs-keyword">in</span>     out     <span class="hljs-built_in">source</span>               destination         
+
+Chain OUTPUT (policy ACCEPT 1108 packets, 213K bytes)
+ pkts bytes target     prot opt <span class="hljs-keyword">in</span>     out     <span class="hljs-built_in">source</span>               destination         
+[root@node1 ~]<span class="hljs-comment">#</span>
+
+</div></code></pre>
+<pre class="hljs"><code><div>[root@node1 ~]<span class="hljs-comment"># </span>
+[root@node1 ~]<span class="hljs-comment"># iptables -t nat -vnL</span>
+Chain PREROUTING (policy ACCEPT 36 packets, 7299 bytes)
+ pkts bytes target     prot opt <span class="hljs-keyword">in</span>     out     <span class="hljs-built_in">source</span>               destination         
+
+Chain INPUT (policy ACCEPT 36 packets, 7299 bytes)
+ pkts bytes target     prot opt <span class="hljs-keyword">in</span>     out     <span class="hljs-built_in">source</span>               destination         
+
+Chain OUTPUT (policy ACCEPT 2 packets, 756 bytes)
+ pkts bytes target     prot opt <span class="hljs-keyword">in</span>     out     <span class="hljs-built_in">source</span>               destination         
+
+Chain POSTROUTING (policy ACCEPT 2 packets, 756 bytes)
+ pkts bytes target     prot opt <span class="hljs-keyword">in</span>     out     <span class="hljs-built_in">source</span>               destination         
+[root@node1 ~]<span class="hljs-comment"># </span>
+[root@node1 ~]<span class="hljs-comment"># </span>
+[root@node1 ~]<span class="hljs-comment">#</span>
+[root@node1 ~]<span class="hljs-comment"># iptables -t mangle -vnL</span>
+Chain PREROUTING (policy ACCEPT 1263 packets, 108K bytes)
+ pkts bytes target     prot opt <span class="hljs-keyword">in</span>     out     <span class="hljs-built_in">source</span>               destination         
+
+Chain INPUT (policy ACCEPT 1263 packets, 108K bytes)
+ pkts bytes target     prot opt <span class="hljs-keyword">in</span>     out     <span class="hljs-built_in">source</span>               destination         
+
+Chain FORWARD (policy ACCEPT 0 packets, 0 bytes)
+ pkts bytes target     prot opt <span class="hljs-keyword">in</span>     out     <span class="hljs-built_in">source</span>               destination         
+
+Chain OUTPUT (policy ACCEPT 843 packets, 152K bytes)
+ pkts bytes target     prot opt <span class="hljs-keyword">in</span>     out     <span class="hljs-built_in">source</span>               destination         
+
+Chain POSTROUTING (policy ACCEPT 843 packets, 152K bytes)
+ pkts bytes target     prot opt <span class="hljs-keyword">in</span>     out     <span class="hljs-built_in">source</span>               destination         
+[root@node1 ~]<span class="hljs-comment"># </span>
+[root@node1 ~]<span class="hljs-comment"># </span>
+[root@node1 ~]<span class="hljs-comment"># iptables -t raw -vnL</span>
+Chain PREROUTING (policy ACCEPT 1276 packets, 109K bytes)
+ pkts bytes target     prot opt <span class="hljs-keyword">in</span>     out     <span class="hljs-built_in">source</span>               destination         
+
+Chain OUTPUT (policy ACCEPT 847 packets, 152K bytes)
+ pkts bytes target     prot opt <span class="hljs-keyword">in</span>     out     <span class="hljs-built_in">source</span>               destination         
+[root@node1 ~]<span class="hljs-comment"># </span>
+[root@node1 ~]<span class="hljs-comment">#</span>
+[root@node1 ~]<span class="hljs-comment"># </span>
+[root@node1 ~]<span class="hljs-comment"># iptables -t security -vnL</span>
+Chain INPUT (policy ACCEPT 1296 packets, 111K bytes)
+ pkts bytes target     prot opt <span class="hljs-keyword">in</span>     out     <span class="hljs-built_in">source</span>               destination         
+
+Chain FORWARD (policy ACCEPT 0 packets, 0 bytes)
+ pkts bytes target     prot opt <span class="hljs-keyword">in</span>     out     <span class="hljs-built_in">source</span>               destination         
+
+Chain OUTPUT (policy ACCEPT 853 packets, 153K bytes)
+ pkts bytes target     prot opt <span class="hljs-keyword">in</span>     out     <span class="hljs-built_in">source</span>               destination         
+[root@node1 ~]<span class="hljs-comment"># </span>
+[root@node1 ~]<span class="hljs-comment">#</span>
+</div></code></pre>
+<h4 id="613-%E4%BD%BF%E7%94%A8-iptables-%E5%A2%9E%E5%88%A0%E6%94%B9%E6%9F%A5%E8%A1%A8%E8%A7%84%E5%88%99">6.1.3 使用 iptables 增删改查表规则</h4>
+<p>  上一小节中我们查看了表和链的关系，下面我们以 filter 表为例，演示一下对表内链上规则的操作</p>
+<ol>
+<li>查询表内各个链上的规则，上一节已经使用过的 iptables -t -vnL 即可, 查询时也可以指定具体的表和对应的链。</li>
+</ol>
+<pre class="hljs"><code><div>[root@node1 ~]<span class="hljs-comment"># iptables -vnL</span>
+Chain INPUT (policy ACCEPT 26 packets, 2080 bytes)
+ pkts bytes target     prot opt <span class="hljs-keyword">in</span>     out     <span class="hljs-built_in">source</span>               destination         
+
+Chain FORWARD (policy ACCEPT 0 packets, 0 bytes)
+ pkts bytes target     prot opt <span class="hljs-keyword">in</span>     out     <span class="hljs-built_in">source</span>               destination         
+
+Chain OUTPUT (policy ACCEPT 22 packets, 2504 bytes)
+ pkts bytes target     prot opt <span class="hljs-keyword">in</span>     out     <span class="hljs-built_in">source</span>               destination         
+[root@node1 ~]<span class="hljs-comment"># </span>
+[root@node1 ~]<span class="hljs-comment">#</span>
+[root@node1 ~]<span class="hljs-comment"># iptables -vnL INPUT</span>
+Chain INPUT (policy ACCEPT 369 packets, 32978 bytes)
+ pkts bytes target     prot opt <span class="hljs-keyword">in</span>     out     <span class="hljs-built_in">source</span>               destination         
+[root@node1 ~]<span class="hljs-comment"># </span>
+[root@node1 ~]<span class="hljs-comment"># iptables -vnL FORWARD</span>
+Chain FORWARD (policy ACCEPT 0 packets, 0 bytes)
+ pkts bytes target     prot opt <span class="hljs-keyword">in</span>     out     <span class="hljs-built_in">source</span>               destination         
+[root@node1 ~]<span class="hljs-comment"># </span>
+[root@node1 ~]<span class="hljs-comment"># iptables -vnL OUTPUT</span>
+Chain OUTPUT (policy ACCEPT 242 packets, 32485 bytes)
+ pkts bytes target     prot opt <span class="hljs-keyword">in</span>     out     <span class="hljs-built_in">source</span>               destination         
+[root@node1 ~]<span class="hljs-comment"># </span>
+[root@node1 ~]<span class="hljs-comment"># </span>
+</div></code></pre>
+<p>上图中我们发现 filter 表内一共包含 INPUT， FORWARD， OUTPUT 三个链，没有添加任何规则，但是每个链都有一个默认的规则，即接受任何数据包，</p>
+<ol start="2">
+<li>在指定表的指定链上添加规则， 使用 -A 选项即可， 下面我们在 INPUT 链上添加一个丢弃 ICMP 数据包的规则</li>
+</ol>
+<pre class="hljs"><code><div>[root@node1 ~]<span class="hljs-comment"># </span>
+[root@node1 ~]<span class="hljs-comment"># iptables -t filter -vnL INPUT</span>
+Chain INPUT (policy ACCEPT 1145 packets, 92703 bytes)
+ pkts bytes target     prot opt <span class="hljs-keyword">in</span>     out     <span class="hljs-built_in">source</span>               destination         
+[root@node1 ~]<span class="hljs-comment"># </span>
+[root@node1 ~]<span class="hljs-comment"># ping 127.0.0.1</span>
+PING 127.0.0.1 (127.0.0.1) 56(84) bytes of data.
+64 bytes from 127.0.0.1: icmp_seq=1 ttl=64 time=0.026 ms
+64 bytes from 127.0.0.1: icmp_seq=2 ttl=64 time=0.043 ms
+64 bytes from 127.0.0.1: icmp_seq=3 ttl=64 time=0.047 ms
+64 bytes from 127.0.0.1: icmp_seq=4 ttl=64 time=0.040 ms
+^C
+--- 127.0.0.1 ping statistics ---
+4 packets transmitted, 4 received, 0% packet loss, time 2999ms
+rtt min/avg/max/mdev = 0.026/0.039/0.047/0.007 ms
+[root@node1 ~]<span class="hljs-comment"># </span>
+[root@node1 ~]<span class="hljs-comment"># </span>
+[root@node1 ~]<span class="hljs-comment"># iptables -t filter -A INPUT -s 127.0.0.1 -p icmp -j DROP</span>
+[root@node1 ~]<span class="hljs-comment"># </span>
+[root@node1 ~]<span class="hljs-comment"># iptables -t filter -vnL INPUT</span>
+Chain INPUT (policy ACCEPT 11 packets, 762 bytes)
+ pkts bytes target     prot opt <span class="hljs-keyword">in</span>     out     <span class="hljs-built_in">source</span>               destination         
+    0     0 DROP       icmp --  *      *       127.0.0.1            0.0.0.0/0           
+[root@node1 ~]<span class="hljs-comment"># </span>
+[root@node1 ~]<span class="hljs-comment"># </span>
+[root@node1 ~]<span class="hljs-comment"># ping 127.0.0.1</span>
+PING 127.0.0.1 (127.0.0.1) 56(84) bytes of data.
+^C
+--- 127.0.0.1 ping statistics ---
+7 packets transmitted, 0 received, 100% packet loss, time 6000ms
+
+[root@node1 ~]<span class="hljs-comment"># </span>
+[root@node1 ~]<span class="hljs-comment"># </span>
+[root@node1 ~]<span class="hljs-comment"># </span>
+[root@node1 ~]<span class="hljs-comment"># iptables -t filter -vnL INPUT</span>
+Chain INPUT (policy ACCEPT 51 packets, 3526 bytes)
+ pkts bytes target     prot opt <span class="hljs-keyword">in</span>     out     <span class="hljs-built_in">source</span>               destination         
+    7   588 DROP       icmp --  *      *       127.0.0.1            0.0.0.0/0           
+[root@node1 ~]<span class="hljs-comment"># </span>
+[root@node1 ~]<span class="hljs-comment"># </span>
+</div></code></pre>
+<p>上图中，默认情况下我的 filter 表的 INPUT 链上没有添加任何规则， 正常使用 ping 127.0.0.1 命令， 使用<br>
+-A 选项添加了匹配 icmp 协议数据包后进行丢弃的规则后， 发现无法在 ping 通 127.0.0.1 , 查看 INPUT 链<br>
+发现匹配到之前 ping 命令发送的 7 个 packets，并进行了丢弃。<br>
+上图中我们使用了 -A 选项进行添加 链规则， 格式为：</p>
+<pre class="hljs"><code><div>iptables -t 表名 -A 链名称 [多个具体的规则] -j 匹配后的处理方式
+</div></code></pre>
+<p>在添加 链 规则的过程中， 多个具体的匹配规则之间是与的关系，即需要同时满足这些规则才能匹配，可以用来定义的匹配规则条件有基本内建型和扩展型。数据包匹配后通常有两种处理方式，一种为 ACCEPT 接收报文，另一种为 DROP 丢弃数据包。<br>
+iptables 支持的匹配规则可以通过扩展模块来提供，这些模块的位置在:</p>
+<pre class="hljs"><code><div>[root@node1 ~]<span class="hljs-comment"># ls -al /usr/lib64/xtables</span>
+total 1372
+drwxr-xr-x.  2 root root  4096 Apr 27 16:17 .
+dr-xr-xr-x. 36 root root 20480 Apr 27 16:18 ..
+-rwxr-xr-x.  1 root root 11448 Nov  5  2018 libip6t_ah.so
+-rwxr-xr-x.  1 root root 11544 Nov  5  2018 libip6t_DNAT.so
+-rwxr-xr-x.  1 root root  7392 Nov  5  2018 libip6t_DNPT.so
+-rwxr-xr-x.  1 root root 11560 Nov  5  2018 libip6t_dst.so
+-rwxr-xr-x.  1 root root  7272 Nov  5  2018 libip6t_eui64.so
+-rwxr-xr-x.  1 root root 11448 Nov  5  2018 libip6t_frag.so
+-rwxr-xr-x.  1 root root 11552 Nov  5  2018 libip6t_hbh.so
+-rwxr-xr-x.  1 root root 11448 Nov  5  2018 libip6t_hl.so
+-rwxr-xr-x.  1 root root  7360 Nov  5  2018 libip6t_HL.so
+-rwxr-xr-x.  1 root root 11536 Nov  5  2018 libip6t_icmp6.so
+-rwxr-xr-x.  1 root root 11520 Nov  5  2018 libip6t_ipv6header.so
+-rwxr-xr-x.  1 root root 11496 Nov  5  2018 libip6t_LOG.so
+-rwxr-xr-x.  1 root root 11488 Nov  5  2018 libip6t_MASQUERADE.so
+-rwxr-xr-x.  1 root root 11552 Nov  5  2018 libip6t_mh.so
+-rwxr-xr-x.  1 root root  7408 Nov  5  2018 libip6t_NETMAP.so
+-rwxr-xr-x.  1 root root 11488 Nov  5  2018 libip6t_REDIRECT.so
+-rwxr-xr-x.  1 root root 11496 Nov  5  2018 libip6t_REJECT.so
+-rwxr-xr-x.  1 root root 11496 Nov  5  2018 libip6t_rt.so
+-rwxr-xr-x.  1 root root 11544 Nov  5  2018 libip6t_SNAT.so
+-rwxr-xr-x.  1 root root  7392 Nov  5  2018 libip6t_SNPT.so
+-rwxr-xr-x.  1 root root  7352 Nov  5  2018 libipt_ah.so
+-rwxr-xr-x.  1 root root 11480 Nov  5  2018 libipt_CLUSTERIP.so
+-rwxr-xr-x.  1 root root 11600 Nov  5  2018 libipt_DNAT.so
+-rwxr-xr-x.  1 root root 11464 Nov  5  2018 libipt_ECN.so
+-rwxr-xr-x.  1 root root 11536 Nov  5  2018 libipt_icmp.so
+-rwxr-xr-x.  1 root root 11496 Nov  5  2018 libipt_LOG.so
+-rwxr-xr-x.  1 root root 11496 Nov  5  2018 libipt_MASQUERADE.so
+-rwxr-xr-x.  1 root root  7288 Nov  5  2018 libipt_MIRROR.so
+-rwxr-xr-x.  1 root root  7368 Nov  5  2018 libipt_NETMAP.so
+-rwxr-xr-x.  1 root root 11536 Nov  5  2018 libipt_realm.so
+-rwxr-xr-x.  1 root root 11496 Nov  5  2018 libipt_REDIRECT.so
+-rwxr-xr-x.  1 root root 11504 Nov  5  2018 libipt_REJECT.so
+-rwxr-xr-x.  1 root root 11536 Nov  5  2018 libipt_SAME.so
+-rwxr-xr-x.  1 root root 11600 Nov  5  2018 libipt_SNAT.so
+-rwxr-xr-x.  1 root root 11456 Nov  5  2018 libipt_ttl.so
+-rwxr-xr-x.  1 root root 11464 Nov  5  2018 libipt_TTL.so
+-rwxr-xr-x.  1 root root 11496 Nov  5  2018 libipt_ULOG.so
+-rwxr-xr-x.  1 root root  7272 Nov  5  2018 libipt_unclean.so
+-rwxr-xr-x.  1 root root 11752 Nov  5  2018 libxt_addrtype.so
+-rwxr-xr-x.  1 root root  7360 Nov  5  2018 libxt_AUDIT.so
+-rwxr-xr-x.  1 root root 11504 Nov  5  2018 libxt_bpf.so
+-rwxr-xr-x.  1 root root  7352 Nov  5  2018 libxt_cgroup.so
+-rwxr-xr-x.  1 root root  7368 Nov  5  2018 libxt_CHECKSUM.so
+-rwxr-xr-x.  1 root root  7400 Nov  5  2018 libxt_CLASSIFY.so
+-rwxr-xr-x.  1 root root 11456 Nov  5  2018 libxt_cluster.so
+-rwxr-xr-x.  1 root root  7344 Nov  5  2018 libxt_comment.so
+-rwxr-xr-x.  1 root root 11496 Nov  5  2018 libxt_connbytes.so
+-rwxr-xr-x.  1 root root 11536 Nov  5  2018 libxt_connlabel.so
+-rwxr-xr-x.  1 root root 12072 Nov  5  2018 libxt_connlimit.so
+-rwxr-xr-x.  1 root root 11680 Nov  5  2018 libxt_connmark.so
+-rwxr-xr-x.  1 root root 11736 Nov  5  2018 libxt_CONNMARK.so
+-rwxr-xr-x.  1 root root  7392 Nov  5  2018 libxt_CONNSECMARK.so
+-rwxr-xr-x.  1 root root 30184 Nov  5  2018 libxt_conntrack.so
+-rwxr-xr-x.  1 root root  7344 Nov  5  2018 libxt_cpu.so
+-rwxr-xr-x.  1 root root 16848 Nov  5  2018 libxt_CT.so
+-rwxr-xr-x.  1 root root 11552 Nov  5  2018 libxt_dccp.so
+-rwxr-xr-x.  1 root root 11568 Nov  5  2018 libxt_devgroup.so
+-rwxr-xr-x.  1 root root 11488 Nov  5  2018 libxt_dscp.so
+-rwxr-xr-x.  1 root root 11496 Nov  5  2018 libxt_DSCP.so
+-rwxr-xr-x.  1 root root 11456 Nov  5  2018 libxt_ecn.so
+-rwxr-xr-x.  1 root root  7344 Nov  5  2018 libxt_esp.so
+-rwxr-xr-x.  1 root root 20296 Nov  5  2018 libxt_hashlimit.so
+-rwxr-xr-x.  1 root root  7352 Nov  5  2018 libxt_helper.so
+-rwxr-xr-x.  1 root root 15904 Nov  5  2018 libxt_HMARK.so
+-rwxr-xr-x.  1 root root  7344 Nov  5  2018 libxt_IDLETIMER.so
+-rwxr-xr-x.  1 root root 16128 Nov  5  2018 libxt_iprange.so
+-rwxr-xr-x.  1 root root 11800 Nov  5  2018 libxt_ipvs.so
+-rwxr-xr-x.  1 root root 11488 Nov  5  2018 libxt_LED.so
+-rwxr-xr-x.  1 root root  7360 Nov  5  2018 libxt_length.so
+-rwxr-xr-x.  1 root root 11496 Nov  5  2018 libxt_limit.so
+-rwxr-xr-x.  1 root root  7360 Nov  5  2018 libxt_mac.so
+-rwxr-xr-x.  1 root root  7560 Nov  5  2018 libxt_mark.so
+-rwxr-xr-x.  1 root root 11920 Nov  5  2018 libxt_MARK.so
+-rwxr-xr-x.  1 root root 16368 Nov  5  2018 libxt_multiport.so
+-rwxr-xr-x.  1 root root  7376 Nov  5  2018 libxt_nfacct.so
+-rwxr-xr-x.  1 root root 11504 Nov  5  2018 libxt_NFLOG.so
+-rwxr-xr-x.  1 root root 12136 Nov  5  2018 libxt_NFQUEUE.so
+-rwxr-xr-x.  1 root root 16848 Nov  5  2018 libxt_NOTRACK.so
+-rwxr-xr-x.  1 root root 11448 Nov  5  2018 libxt_osf.so
+-rwxr-xr-x.  1 root root 16136 Nov  5  2018 libxt_owner.so
+-rwxr-xr-x.  1 root root 11464 Nov  5  2018 libxt_physdev.so
+-rwxr-xr-x.  1 root root 11496 Nov  5  2018 libxt_pkttype.so
+-rwxr-xr-x.  1 root root 15832 Nov  5  2018 libxt_policy.so
+-rwxr-xr-x.  1 root root  7352 Nov  5  2018 libxt_quota.so
+-rwxr-xr-x.  1 root root 15656 Nov  5  2018 libxt_rateest.so
+-rwxr-xr-x.  1 root root 11536 Nov  5  2018 libxt_RATEEST.so
+-rwxr-xr-x.  1 root root 16024 Nov  5  2018 libxt_recent.so
+-rwxr-xr-x.  1 root root 11480 Nov  5  2018 libxt_rpfilter.so
+-rwxr-xr-x.  1 root root 15696 Nov  5  2018 libxt_sctp.so
+-rwxr-xr-x.  1 root root  7376 Nov  5  2018 libxt_SECMARK.so
+-rwxr-xr-x.  1 root root 20504 Nov  5  2018 libxt_set.so
+-rwxr-xr-x.  1 root root 16224 Nov  5  2018 libxt_SET.so
+-rwxr-xr-x.  1 root root 11856 Nov  5  2018 libxt_socket.so
+-rwxr-xr-x.  1 root root  7328 Nov  5  2018 libxt_standard.so
+-rwxr-xr-x.  1 root root 30176 Nov  5  2018 libxt_state.so
+-rwxr-xr-x.  1 root root 11464 Nov  5  2018 libxt_statistic.so
+-rwxr-xr-x.  1 root root 11760 Nov  5  2018 libxt_string.so
+-rwxr-xr-x.  1 root root 11480 Nov  5  2018 libxt_SYNPROXY.so
+-rwxr-xr-x.  1 root root  7352 Nov  5  2018 libxt_tcpmss.so
+-rwxr-xr-x.  1 root root 11672 Nov  5  2018 libxt_TCPMSS.so
+-rwxr-xr-x.  1 root root 11520 Nov  5  2018 libxt_TCPOPTSTRIP.so
+-rwxr-xr-x.  1 root root 15680 Nov  5  2018 libxt_tcp.so
+-rwxr-xr-x.  1 root root 11688 Nov  5  2018 libxt_TEE.so
+-rwxr-xr-x.  1 root root 15768 Nov  5  2018 libxt_time.so
+-rwxr-xr-x.  1 root root 11696 Nov  5  2018 libxt_tos.so
+-rwxr-xr-x.  1 root root 11696 Nov  5  2018 libxt_TOS.so
+-rwxr-xr-x.  1 root root 11936 Nov  5  2018 libxt_TPROXY.so
+-rwxr-xr-x.  1 root root  7280 Nov  5  2018 libxt_TRACE.so
+-rwxr-xr-x.  1 root root 11504 Nov  5  2018 libxt_u32.so
+-rwxr-xr-x.  1 root root 11512 Nov  5  2018 libxt_udp.so
+[root@node1 ~]<span class="hljs-comment">#</span>
+</div></code></pre>
+<p>我们知道 iptables 是设置规则的，要想使指定的规则有效，还需要 Linux 内核的支持，下面我们查看一下内核<br>
+支持的具体功能，模块路径为：</p>
+<pre class="hljs"><code><div>[root@node1 ~]<span class="hljs-comment"># </span>
+[root@node1 ~]<span class="hljs-comment"># ls -al /lib/modules/3.10.0-957.el7.x86_64/kernel/net/ipv4/netfilter/</span>
+total 200
+drwxr-xr-x. 2 root root  4096 Apr 27 16:17 .
+drwxr-xr-x. 3 root root  4096 Apr 27 16:17 ..
+-rw-r--r--. 1 root root  2004 Nov  9  2018 arptable_filter.ko.xz
+-rw-r--r--. 1 root root 10688 Nov  9  2018 arp_tables.ko.xz
+-rw-r--r--. 1 root root  1968 Nov  9  2018 arpt_mangle.ko.xz
+-rw-r--r--. 1 root root  2192 Nov  9  2018 iptable_filter.ko.xz
+-rw-r--r--. 1 root root  2228 Nov  9  2018 iptable_mangle.ko.xz
+-rw-r--r--. 1 root root  2096 Nov  9  2018 iptable_nat.ko.xz
+-rw-r--r--. 1 root root  1980 Nov  9  2018 iptable_raw.ko.xz
+-rw-r--r--. 1 root root  2068 Nov  9  2018 iptable_security.ko.xz
+-rw-r--r--. 1 root root 12320 Nov  9  2018 ip_tables.ko.xz
+-rw-r--r--. 1 root root  2320 Nov  9  2018 ipt_ah.ko.xz
+-rw-r--r--. 1 root root  6536 Nov  9  2018 ipt_CLUSTERIP.ko.xz
+-rw-r--r--. 1 root root  2456 Nov  9  2018 ipt_ECN.ko.xz
+-rw-r--r--. 1 root root  2128 Nov  9  2018 ipt_MASQUERADE.ko.xz
+-rw-r--r--. 1 root root  2004 Nov  9  2018 ipt_REJECT.ko.xz
+-rw-r--r--. 1 root root  2388 Nov  9  2018 ipt_rpfilter.ko.xz
+-rw-r--r--. 1 root root  4632 Nov  9  2018 ipt_SYNPROXY.ko.xz
+-rw-r--r--. 1 root root  5816 Nov  9  2018 ipt_ULOG.ko.xz
+-rw-r--r--. 1 root root  6892 Nov  9  2018 nf_conntrack_ipv4.ko.xz
+-rw-r--r--. 1 root root  1992 Nov  9  2018 nf_defrag_ipv4.ko.xz
+-rw-r--r--. 1 root root  2188 Nov  9  2018 nf_dup_ipv4.ko.xz
+-rw-r--r--. 1 root root  3924 Nov  9  2018 nf_log_ipv4.ko.xz
+-rw-r--r--. 1 root root  6152 Nov  9  2018 nf_nat_h323.ko.xz
+-rw-r--r--. 1 root root  4844 Nov  9  2018 nf_nat_ipv4.ko.xz
+-rw-r--r--. 1 root root  2408 Nov  9  2018 nf_nat_masquerade_ipv4.ko.xz
+-rw-r--r--. 1 root root  3892 Nov  9  2018 nf_nat_pptp.ko.xz
+-rw-r--r--. 1 root root  2564 Nov  9  2018 nf_nat_proto_gre.ko.xz
+-rw-r--r--. 1 root root  5992 Nov  9  2018 nf_nat_snmp_basic.ko.xz
+-rw-r--r--. 1 root root  2936 Nov  9  2018 nf_reject_ipv4.ko.xz
+-rw-r--r--. 1 root root  2188 Nov  9  2018 nf_tables_arp.ko.xz
+-rw-r--r--. 1 root root  2604 Nov  9  2018 nf_tables_ipv4.ko.xz
+-rw-r--r--. 1 root root  1948 Nov  9  2018 nft_chain_nat_ipv4.ko.xz
+-rw-r--r--. 1 root root  1928 Nov  9  2018 nft_chain_route_ipv4.ko.xz
+-rw-r--r--. 1 root root  1988 Nov  9  2018 nft_dup_ipv4.ko.xz
+-rw-r--r--. 1 root root  1944 Nov  9  2018 nft_masq_ipv4.ko.xz
+-rw-r--r--. 1 root root  1864 Nov  9  2018 nft_redir_ipv4.ko.xz
+-rw-r--r--. 1 root root  1792 Nov  9  2018 nft_reject_ipv4.ko.xz
+[root@node1 ~]<span class="hljs-comment"># </span>
+[root@node1 ~]<span class="hljs-comment">#</span>
+</div></code></pre>
+<p>平时我们需要使用具体规则时，可以查看具体的 man 帮助手册。</p>
+<p>上图中的 -A 选项代表添加，效果为在指定链的最后添加规则， 下面我们演示一下 -I 选项他可以指定将添加的<br>
+规则存放于链中的具体位置，不指定位置时，默认放置在链的第一条。使用 -I 插入新规则后，其他规则的位置<br>
+依次按序进行调整：</p>
+<pre class="hljs"><code><div>[root@node1 ~]<span class="hljs-comment"># </span>
+[root@node1 ~]<span class="hljs-comment"># iptables -t filter -vnL INPUT</span>
+Chain INPUT (policy ACCEPT 115 packets, 8756 bytes)
+ pkts bytes target     prot opt <span class="hljs-keyword">in</span>     out     <span class="hljs-built_in">source</span>               destination         
+    7   588 DROP       icmp --  *      *       127.0.0.1            0.0.0.0/0           
+[root@node1 ~]<span class="hljs-comment"># </span>
+[root@node1 ~]<span class="hljs-comment"># </span>
+[root@node1 ~]<span class="hljs-comment"># iptables -t filter -A INPUT -s 127.0.0.1 -p icmp -j DROP</span>
+[root@node1 ~]<span class="hljs-comment"># </span>
+[root@node1 ~]<span class="hljs-comment">#</span>
+[root@node1 ~]<span class="hljs-comment"># iptables -t filter -vnL INPUT</span>
+Chain INPUT (policy ACCEPT 11 packets, 752 bytes)
+ pkts bytes target     prot opt <span class="hljs-keyword">in</span>     out     <span class="hljs-built_in">source</span>               destination         
+    7   588 DROP       icmp --  *      *       127.0.0.1            0.0.0.0/0           
+    0     0 DROP       icmp --  *      *       127.0.0.1            0.0.0.0/0           
+[root@node1 ~]<span class="hljs-comment"># </span>
+[root@node1 ~]<span class="hljs-comment">#</span>
+[root@node1 ~]<span class="hljs-comment"># iptables -t filter -I INPUT 1 -s 127.0.0.1 -p icmp -j ACCEPT</span>
+[root@node1 ~]<span class="hljs-comment"># </span>
+[root@node1 ~]<span class="hljs-comment"># </span>
+[root@node1 ~]<span class="hljs-comment"># iptables -t filter -vnL INPUT</span>
+Chain INPUT (policy ACCEPT 25 packets, 1908 bytes)
+ pkts bytes target     prot opt <span class="hljs-keyword">in</span>     out     <span class="hljs-built_in">source</span>               destination         
+    0     0 ACCEPT     icmp --  *      *       127.0.0.1            0.0.0.0/0           
+    7   588 DROP       icmp --  *      *       127.0.0.1            0.0.0.0/0           
+    0     0 DROP       icmp --  *      *       127.0.0.1            0.0.0.0/0      
+[root@node1 ~]<span class="hljs-comment">#</span>
+[root@node1 ~]<span class="hljs-comment">#      </span>
+[root@node1 ~]<span class="hljs-comment"># iptables -t filter -I INPUT -s 127.0.0.1 -p icmp -j DROP</span>
+[root@node1 ~]<span class="hljs-comment"># </span>
+[root@node1 ~]<span class="hljs-comment"># </span>
+[root@node1 ~]<span class="hljs-comment">#  iptables -t filter -vnL INPUT</span>
+Chain INPUT (policy ACCEPT 27 packets, 2026 bytes)
+ pkts bytes target     prot opt <span class="hljs-keyword">in</span>     out     <span class="hljs-built_in">source</span>               destination         
+    0     0 DROP       icmp --  *      *       127.0.0.1            0.0.0.0/0           
+    0     0 ACCEPT     icmp --  *      *       127.0.0.1            0.0.0.0/0           
+    7   588 DROP       icmp --  *      *       127.0.0.1            0.0.0.0/0           
+    0     0 DROP       icmp --  *      *       127.0.0.1            0.0.0.0/0                   
+[root@node1 ~]
+[root@node1 ~]<span class="hljs-comment"># </span>
+[root@node1 ~]<span class="hljs-comment">#</span>
+</div></code></pre>
+<ol start="3">
+<li>添加完我们期望的规则后，同样我们也可以将其删除，使用 -D 选项即可。他有两种删除方式， 一种是指定<br>
+要删除的规则在链中的编号，另一种是写全完整的匹配条件和处理方法，这种写法相当于将 添加规则时的 -A<br>
+替换成 -D ，下面我们演示一下:</li>
+</ol>
+<pre class="hljs"><code><div>[root@node1 ~]<span class="hljs-comment"># </span>
+[root@node1 ~]<span class="hljs-comment"># iptables -t filter -vnL INPUT</span>
+Chain INPUT (policy ACCEPT 52 packets, 3712 bytes)
+ pkts bytes target     prot opt <span class="hljs-keyword">in</span>     out     <span class="hljs-built_in">source</span>               destination         
+    0     0 DROP       icmp --  *      *       127.0.0.1            0.0.0.0/0           
+    0     0 ACCEPT     icmp --  *      *       127.0.0.1            0.0.0.0/0           
+    7   588 DROP       icmp --  *      *       127.0.0.1            0.0.0.0/0           
+    0     0 DROP       icmp --  *      *       127.0.0.1            0.0.0.0/0           
+[root@node1 ~]<span class="hljs-comment"># </span>
+[root@node1 ~]<span class="hljs-comment"># </span>
+[root@node1 ~]<span class="hljs-comment"># iptables -t filter -D INPUT -s 127.0.0.1 -p icmp -j DROP</span>
+[root@node1 ~]<span class="hljs-comment"># </span>
+[root@node1 ~]<span class="hljs-comment"># iptables -t filter -vnL INPUT</span>
+Chain INPUT (policy ACCEPT 8 packets, 528 bytes)
+ pkts bytes target     prot opt <span class="hljs-keyword">in</span>     out     <span class="hljs-built_in">source</span>               destination         
+    0     0 ACCEPT     icmp --  *      *       127.0.0.1            0.0.0.0/0           
+    7   588 DROP       icmp --  *      *       127.0.0.1            0.0.0.0/0           
+    0     0 DROP       icmp --  *      *       127.0.0.1            0.0.0.0/0           
+[root@node1 ~]<span class="hljs-comment"># </span>
+[root@node1 ~]<span class="hljs-comment">#</span>
+[root@node1 ~]<span class="hljs-comment"># iptables -t filter -D INPUT -s 127.0.0.1 -p icmp -j ACCEPT</span>
+Chain INPUT (policy ACCEPT 8 packets, 528 bytes)
+ pkts bytes target     prot opt <span class="hljs-keyword">in</span>     out     <span class="hljs-built_in">source</span>               destination                   
+    7   588 DROP       icmp --  *      *       127.0.0.1            0.0.0.0/0           
+    0     0 DROP       icmp --  *      *       127.0.0.1            0.0.0.0/0 
+[root@node1 ~]<span class="hljs-comment"># </span>
+[root@node1 ~]<span class="hljs-comment">#</span>
+[root@node1 ~]<span class="hljs-comment"># iptables -t filter -D INPUT 2</span>
+[root@node1 ~]<span class="hljs-comment"># </span>
+[root@node1 ~]<span class="hljs-comment">#</span>
+[root@node1 ~]<span class="hljs-comment"># iptables -t filter -vnL INPUT</span>
+Chain INPUT (policy ACCEPT 104 packets, 8326 bytes)
+ pkts bytes target     prot opt <span class="hljs-keyword">in</span>     out     <span class="hljs-built_in">source</span>               destination         
+    7   588 DROP       icmp --  *      *       127.0.0.1            0.0.0.0/0           
+[root@node1 ~]<span class="hljs-comment"># </span>
+[root@node1 ~]<span class="hljs-comment">#</span>
+[root@node1 ~]<span class="hljs-comment"># iptables -t filter -D INPUT 1</span>
+[root@node1 ~]<span class="hljs-comment">#  </span>
+[root@node1 ~]<span class="hljs-comment">#</span>
+[root@node1 ~]<span class="hljs-comment"># iptables -t filter -vnL INPUT</span>
+Chain INPUT (policy ACCEPT 24 packets, 1906 bytes)
+ pkts bytes target     prot opt <span class="hljs-keyword">in</span>     out     <span class="hljs-built_in">source</span>               destination         
+[root@node1 ~]<span class="hljs-comment"># </span>
+[root@node1 ~]<span class="hljs-comment"># </span>
+</div></code></pre>
+<p>上图中我们完成了删除链中指定的规则， 下面我们介绍一个 -Z 选项， 他可以清空链中匹配的数据包记录值，如图：</p>
+<pre class="hljs"><code><div>[root@node1 ~]<span class="hljs-comment"># </span>
+[root@node1 ~]<span class="hljs-comment"># iptables -t filter -vnL INPUT</span>
+Chain INPUT (policy ACCEPT 10 packets, 660 bytes)
+ pkts bytes target     prot opt <span class="hljs-keyword">in</span>     out     <span class="hljs-built_in">source</span>               destination         
+[root@node1 ~]<span class="hljs-comment">#  </span>
+[root@node1 ~]<span class="hljs-comment"># </span>
+[root@node1 ~]<span class="hljs-comment"># iptables -t filter -A INPUT -s 127.0.0.1 -p icmp -j DROP</span>
+[root@node1 ~]<span class="hljs-comment"># </span>
+[root@node1 ~]<span class="hljs-comment"># iptables -t filter -vnL INPUT </span>
+Chain INPUT (policy ACCEPT 65 packets, 4906 bytes)
+ pkts bytes target     prot opt <span class="hljs-keyword">in</span>     out     <span class="hljs-built_in">source</span>               destination         
+    0     0 DROP       icmp --  *      *       127.0.0.1            0.0.0.0/0           
+[root@node1 ~]<span class="hljs-comment"># </span>
+[root@node1 ~]<span class="hljs-comment"># </span>
+[root@node1 ~]<span class="hljs-comment"># ping 127.0.0.1</span>
+PING 127.0.0.1 (127.0.0.1) 56(84) bytes of data.
+
+^C
+--- 127.0.0.1 ping statistics ---
+3 packets transmitted, 0 received, 100% packet loss, time 2000ms
+
+[root@node1 ~]<span class="hljs-comment"># </span>
+[root@node1 ~]<span class="hljs-comment"># </span>
+[root@node1 ~]<span class="hljs-comment"># iptables -t filter -vnL INPUT </span>
+Chain INPUT (policy ACCEPT 112 packets, 8148 bytes)
+ pkts bytes target     prot opt <span class="hljs-keyword">in</span>     out     <span class="hljs-built_in">source</span>               destination         
+    3   252 DROP       icmp --  *      *       127.0.0.1            0.0.0.0/0           
+[root@node1 ~]<span class="hljs-comment"># </span>
+[root@node1 ~]<span class="hljs-comment"># </span>
+[root@node1 ~]<span class="hljs-comment"># iptables -t filter -Z INPUT </span>
+[root@node1 ~]<span class="hljs-comment"># </span>
+[root@node1 ~]<span class="hljs-comment"># </span>
+[root@node1 ~]<span class="hljs-comment"># iptables -t filter -vnL INPUT </span>
+Chain INPUT (policy ACCEPT 10 packets, 722 bytes)
+ pkts bytes target     prot opt <span class="hljs-keyword">in</span>     out     <span class="hljs-built_in">source</span>               destination         
+    0     0 DROP       icmp --  *      *       127.0.0.1            0.0.0.0/0           
+[root@node1 ~]<span class="hljs-comment"># </span>
+[root@node1 ~]<span class="hljs-comment"># </span>
+[root@node1 ~]<span class="hljs-comment"># </span>
+</div></code></pre>
+<p>iptables 中还有一个 -F 选项， 他可以将指定链中的所有规则一次性全部删除， 如图：</p>
+<pre class="hljs"><code><div>[root@node1 ~]<span class="hljs-comment">#</span>
+[root@node1 ~]<span class="hljs-comment"># iptables -t filter -vnL INPUT</span>
+Chain INPUT (policy ACCEPT 629 packets, 49179 bytes)
+ pkts bytes target     prot opt <span class="hljs-keyword">in</span>     out     <span class="hljs-built_in">source</span>               destination         
+    0     0 DROP       icmp --  *      *       127.0.0.1            0.0.0.0/0           
+[root@node1 ~]<span class="hljs-comment"># </span>
+[root@node1 ~]<span class="hljs-comment">#</span>
+[root@node1 ~]<span class="hljs-comment"># iptables -t filter -A INPUT -s 127.0.0.1 -p icmp -j DROP</span>
+[root@node1 ~]<span class="hljs-comment"># </span>
+[root@node1 ~]<span class="hljs-comment">#</span>
+[root@node1 ~]<span class="hljs-comment"># iptables -t filter -vnL INPUT</span>
+Chain INPUT (policy ACCEPT 35 packets, 2700 bytes)
+ pkts bytes target     prot opt <span class="hljs-keyword">in</span>     out     <span class="hljs-built_in">source</span>               destination         
+    0     0 DROP       icmp --  *      *       127.0.0.1            0.0.0.0/0           
+    0     0 DROP       icmp --  *      *       127.0.0.1            0.0.0.0/0           
+[root@node1 ~]<span class="hljs-comment"># </span>
+[root@node1 ~]<span class="hljs-comment"># iptables -t filter -F  INPUT</span>
+[root@node1 ~]<span class="hljs-comment"># </span>
+[root@node1 ~]<span class="hljs-comment">#</span>
+[root@node1 ~]<span class="hljs-comment"># iptables -t filter -vnL INPUT</span>
+Chain INPUT (policy ACCEPT 15 packets, 1026 bytes)
+ pkts bytes target     prot opt <span class="hljs-keyword">in</span>     out     <span class="hljs-built_in">source</span>               destination         
+[root@node1 ~]<span class="hljs-comment"># </span>
+[root@node1 ~]<span class="hljs-comment">#</span>
+</div></code></pre>
+<ol start="4">
+<li>如果需要修改某个链上一条指定的规则，可以使用 -R 选项来完成。</li>
+</ol>
+<pre class="hljs"><code><div>[root@node1 ~]<span class="hljs-comment"># </span>
+[root@node1 ~]<span class="hljs-comment"># iptables -t filter -vnL INPUT</span>
+Chain INPUT (policy ACCEPT 201 packets, 16115 bytes)
+ pkts bytes target     prot opt <span class="hljs-keyword">in</span>     out     <span class="hljs-built_in">source</span>               destination         
+[root@node1 ~]<span class="hljs-comment"># </span>
+[root@node1 ~]<span class="hljs-comment"># </span>
+[root@node1 ~]<span class="hljs-comment"># iptables -t filter -A INPUT -s 127.0.0.1 -p icmp -j ACCEPT</span>
+[root@node1 ~]<span class="hljs-comment"># </span>
+[root@node1 ~]<span class="hljs-comment"># </span>
+[root@node1 ~]<span class="hljs-comment"># iptables -t filter -vnL INPUT</span>
+Chain INPUT (policy ACCEPT 49 packets, 4034 bytes)
+ pkts bytes target     prot opt <span class="hljs-keyword">in</span>     out     <span class="hljs-built_in">source</span>               destination         
+    0     0 ACCEPT     icmp --  *      *       127.0.0.1            0.0.0.0/0           
+[root@node1 ~]<span class="hljs-comment"># </span>
+[root@node1 ~]<span class="hljs-comment">#</span>
+[root@node1 ~]<span class="hljs-comment"># </span>
+[root@node1 ~]<span class="hljs-comment"># iptables -t filter -R INPUT 1 -s 8.8.8.8 -p icmp -j DROP</span>
+[root@node1 ~]<span class="hljs-comment"># </span>
+[root@node1 ~]<span class="hljs-comment"># iptables -t filter -vnL INPUT</span>
+Chain INPUT (policy ACCEPT 34 packets, 2556 bytes)
+ pkts bytes target     prot opt <span class="hljs-keyword">in</span>     out     <span class="hljs-built_in">source</span>               destination         
+    0     0 DROP       icmp --  *      *       8.8.8.8              0.0.0.0/0           
+[root@node1 ~]<span class="hljs-comment"># </span>
+[root@node1 ~]<span class="hljs-comment"># </span>
+[root@node1 ~]<span class="hljs-comment"># </span>
+</div></code></pre>
+<p>我们之前都是在某个链上进行增删改的操作，除了我们自定义的规则外，我们发现每个链都有其默认的处理规则，下面我们使用 -P 选项修改他。</p>
+<pre class="hljs"><code><div>[root@node1 ~]<span class="hljs-comment"># </span>
+[root@node1 ~]<span class="hljs-comment"># </span>
+[root@node1 ~]<span class="hljs-comment"># iptables -t filter -vnL INPUT</span>
+Chain INPUT (policy ACCEPT 102 packets, 8094 bytes)
+ pkts bytes target     prot opt <span class="hljs-keyword">in</span>     out     <span class="hljs-built_in">source</span>               destination         
+    0     0 DROP       icmp --  *      *       8.8.8.8              0.0.0.0/0           
+[root@node1 ~]<span class="hljs-comment"># </span>
+[root@node1 ~]<span class="hljs-comment"># </span>
+[root@node1 ~]<span class="hljs-comment"># iptables -t filter -R INPUT 1  -p tcp  -j ACCEPT</span>
+[root@node1 ~]<span class="hljs-comment">#   </span>
+[root@node1 ~]<span class="hljs-comment"># iptables -t filter -vnL INPUT</span>
+Chain INPUT (policy DROP 3 packets, 234 bytes)
+ pkts bytes target     prot opt <span class="hljs-keyword">in</span>     out     <span class="hljs-built_in">source</span>               destination         
+  106  7812 ACCEPT     tcp  --  *      *       0.0.0.0/0            0.0.0.0/0           
+[root@node1 ~]<span class="hljs-comment"># </span>
+[root@node1 ~]<span class="hljs-comment"># </span>
+[root@node1 ~]<span class="hljs-comment"># iptables -t filter -P INPUT  DROP</span>
+[root@node1 ~]<span class="hljs-comment"># </span>
+[root@node1 ~]<span class="hljs-comment"># </span>
+[root@node1 ~]<span class="hljs-comment"># iptables -t filter -vnL INPUT</span>
+Chain INPUT (policy DROP 3 packets, 234 bytes)
+ pkts bytes target     prot opt <span class="hljs-keyword">in</span>     out     <span class="hljs-built_in">source</span>               destination         
+  106  7812 ACCEPT     tcp  --  *      *       0.0.0.0/0            0.0.0.0/0           
+[root@node1 ~]<span class="hljs-comment"># </span>
+[root@node1 ~]<span class="hljs-comment"># </span>
+[root@node1 ~]<span class="hljs-comment"># iptables -t filter -P INPUT ACCEPT</span>
+[root@node1 ~]<span class="hljs-comment"># </span>
+[root@node1 ~]<span class="hljs-comment">#</span>
+[root@node1 ~]<span class="hljs-comment"># iptables -t filter -vnL INPUT</span>
+Chain INPUT (policy ACCEPT 0 packets, 0 bytes)
+ pkts bytes target     prot opt <span class="hljs-keyword">in</span>     out     <span class="hljs-built_in">source</span>               destination         
+  153 11132 ACCEPT     tcp  --  *      *       0.0.0.0/0            0.0.0.0/0                  
+[root@node1 ~]<span class="hljs-comment"># </span>
+[root@node1 ~]<span class="hljs-comment"># </span>
+</div></code></pre>
+<ol start="5">
+<li>iptables 的表中除了自己默认关联的链以外，出于规则管理的需要，他还支持自定义链，下面我们演示一下<br>
+创建和删除自定义链：</li>
+</ol>
+<pre class="hljs"><code><div>[root@node1 ~]<span class="hljs-comment"># iptables -F</span>
+[root@node1 ~]<span class="hljs-comment"># </span>
+[root@node1 ~]<span class="hljs-comment"># </span>
+[root@node1 ~]<span class="hljs-comment"># iptables -t filter -vnL</span>
+Chain INPUT (policy ACCEPT 107 packets, 7820 bytes)
+ pkts bytes target     prot opt <span class="hljs-keyword">in</span>     out     <span class="hljs-built_in">source</span>               destination         
+
+Chain FORWARD (policy ACCEPT 0 packets, 0 bytes)
+ pkts bytes target     prot opt <span class="hljs-keyword">in</span>     out     <span class="hljs-built_in">source</span>               destination         
+
+Chain OUTPUT (policy ACCEPT 67 packets, 6252 bytes)
+ pkts bytes target     prot opt <span class="hljs-keyword">in</span>     out     <span class="hljs-built_in">source</span>               destination         
+[root@node1 ~]<span class="hljs-comment"># </span>
+[root@node1 ~]<span class="hljs-comment"># </span>
+[root@node1 ~]<span class="hljs-comment"># </span>
+[root@node1 ~]<span class="hljs-comment"># iptables -t filter -N mychain</span>
+[root@node1 ~]<span class="hljs-comment"># </span>
+[root@node1 ~]<span class="hljs-comment"># iptables -t filter -vnL</span>
+Chain INPUT (policy ACCEPT 7 packets, 488 bytes)
+ pkts bytes target     prot opt <span class="hljs-keyword">in</span>     out     <span class="hljs-built_in">source</span>               destination         
+
+Chain FORWARD (policy ACCEPT 0 packets, 0 bytes)
+ pkts bytes target     prot opt <span class="hljs-keyword">in</span>     out     <span class="hljs-built_in">source</span>               destination         
+
+Chain OUTPUT (policy ACCEPT 5 packets, 556 bytes)
+ pkts bytes target     prot opt <span class="hljs-keyword">in</span>     out     <span class="hljs-built_in">source</span>               destination         
+
+Chain mychain (0 references)
+ pkts bytes target     prot opt <span class="hljs-keyword">in</span>     out     <span class="hljs-built_in">source</span>               destination         
+[root@node1 ~]<span class="hljs-comment">#</span>
+[root@node1 ~]<span class="hljs-comment"># </span>
+[root@node1 ~]<span class="hljs-comment"># iptables -t filter -X mychain</span>
+[root@node1 ~]<span class="hljs-comment"># </span>
+[root@node1 ~]<span class="hljs-comment"># iptables -t filter -vnL</span>
+Chain INPUT (policy ACCEPT 47 packets, 3474 bytes)
+ pkts bytes target     prot opt <span class="hljs-keyword">in</span>     out     <span class="hljs-built_in">source</span>               destination         
+
+Chain FORWARD (policy ACCEPT 0 packets, 0 bytes)
+ pkts bytes target     prot opt <span class="hljs-keyword">in</span>     out     <span class="hljs-built_in">source</span>               destination         
+
+Chain OUTPUT (policy ACCEPT 28 packets, 2640 bytes)
+ pkts bytes target     prot opt <span class="hljs-keyword">in</span>     out     <span class="hljs-built_in">source</span>               destination         
+[root@node1 ~]<span class="hljs-comment"># </span>
+[root@node1 ~]<span class="hljs-comment">#</span>
+</div></code></pre>
+<p>下面我们演示一下在自定义链中编辑规则：</p>
+<pre class="hljs"><code><div>[root@node1 ~]<span class="hljs-comment"># </span>
+[root@node1 ~]<span class="hljs-comment"># iptables -t filter -N mychain</span>
+[root@node1 ~]<span class="hljs-comment"># </span>
+[root@node1 ~]<span class="hljs-comment"># </span>
+[root@node1 ~]<span class="hljs-comment"># iptables -t filter -A mychain -s 127.0.0.1 -p icmp -j DROP</span>
+[root@node1 ~]<span class="hljs-comment"># </span>
+[root@node1 ~]<span class="hljs-comment">#</span>
+[root@node1 ~]<span class="hljs-comment"># iptables -t filter -vnL</span>
+Chain INPUT (policy ACCEPT 66 packets, 4688 bytes)
+ pkts bytes target     prot opt <span class="hljs-keyword">in</span>     out     <span class="hljs-built_in">source</span>               destination         
+
+Chain FORWARD (policy ACCEPT 0 packets, 0 bytes)
+ pkts bytes target     prot opt <span class="hljs-keyword">in</span>     out     <span class="hljs-built_in">source</span>               destination         
+
+Chain OUTPUT (policy ACCEPT 36 packets, 3376 bytes)
+ pkts bytes target     prot opt <span class="hljs-keyword">in</span>     out     <span class="hljs-built_in">source</span>               destination         
+
+Chain mychain (0 references)
+ pkts bytes target     prot opt <span class="hljs-keyword">in</span>     out     <span class="hljs-built_in">source</span>               destination         
+    0     0 DROP       icmp --  *      *       127.0.0.1            0.0.0.0/0           
+[root@node1 ~]<span class="hljs-comment"># </span>
+[root@node1 ~]<span class="hljs-comment"># ping 127.0.0.1</span>
+PING 127.0.0.1 (127.0.0.1) 56(84) bytes of data.
+64 bytes from 127.0.0.1: icmp_seq=1 ttl=64 time=0.049 ms
+64 bytes from 127.0.0.1: icmp_seq=2 ttl=64 time=0.065 ms
+64 bytes from 127.0.0.1: icmp_seq=3 ttl=64 time=0.053 ms
+64 bytes from 127.0.0.1: icmp_seq=4 ttl=64 time=0.058 ms
+^C
+--- 127.0.0.1 ping statistics ---
+4 packets transmitted, 4 received, 0% packet loss, time 2999ms
+rtt min/avg/max/mdev = 0.049/0.056/0.065/0.008 ms
+[root@node1 ~]<span class="hljs-comment"># </span>
+[root@node1 ~]<span class="hljs-comment">#</span>
+</div></code></pre>
+<p>上图中我们创建了新链，但是并没有实现过滤效果，原因在于，自定义链没有被执行，表内的链只有默认链会被执行，<br>
+自定义链需要在默认链中调用才能执行。下面我们在 INPUT 链中进行调用自定义链。</p>
+<pre class="hljs"><code><div>[root@node1 ~]<span class="hljs-comment"># </span>
+[root@node1 ~]<span class="hljs-comment"># iptables -t filter -A INPUT -s 127.0.0.1 -j mychain</span>
+[root@node1 ~]<span class="hljs-comment"># </span>
+[root@node1 ~]<span class="hljs-comment"># iptables -t filter -vnL</span>
+Chain INPUT (policy ACCEPT 10 packets, 660 bytes)
+ pkts bytes target     prot opt <span class="hljs-keyword">in</span>     out     <span class="hljs-built_in">source</span>               destination         
+    0     0 mychain    all  --  *      *       127.0.0.1            0.0.0.0/0           
+
+Chain FORWARD (policy ACCEPT 0 packets, 0 bytes)
+ pkts bytes target     prot opt <span class="hljs-keyword">in</span>     out     <span class="hljs-built_in">source</span>               destination         
+
+Chain OUTPUT (policy ACCEPT 6 packets, 760 bytes)
+ pkts bytes target     prot opt <span class="hljs-keyword">in</span>     out     <span class="hljs-built_in">source</span>               destination         
+
+Chain mychain (1 references)
+ pkts bytes target     prot opt <span class="hljs-keyword">in</span>     out     <span class="hljs-built_in">source</span>               destination         
+    0     0 DROP       icmp --  *      *       127.0.0.1            0.0.0.0/0           
+[root@node1 ~]<span class="hljs-comment"># </span>
+[root@node1 ~]<span class="hljs-comment"># </span>
+[root@node1 ~]<span class="hljs-comment"># ping 127.0.0.1</span>
+PING 127.0.0.1 (127.0.0.1) 56(84) bytes of data.
+^C
+--- 127.0.0.1 ping statistics ---
+3 packets transmitted, 0 received, 100% packet loss, time 2000ms
+
+[root@node1 ~]<span class="hljs-comment"># </span>
+[root@node1 ~]<span class="hljs-comment"># </span>
+[root@node1 ~]<span class="hljs-comment"># iptables -t filter -vnL</span>
+Chain INPUT (policy ACCEPT 34 packets, 2280 bytes)
+ pkts bytes target     prot opt <span class="hljs-keyword">in</span>     out     <span class="hljs-built_in">source</span>               destination         
+    3   252 mychain    all  --  *      *       127.0.0.1            0.0.0.0/0           
+
+Chain FORWARD (policy ACCEPT 0 packets, 0 bytes)
+ pkts bytes target     prot opt <span class="hljs-keyword">in</span>     out     <span class="hljs-built_in">source</span>               destination         
+
+Chain OUTPUT (policy ACCEPT 26 packets, 3672 bytes)
+ pkts bytes target     prot opt <span class="hljs-keyword">in</span>     out     <span class="hljs-built_in">source</span>               destination         
+
+Chain mychain (1 references)
+ pkts bytes target     prot opt <span class="hljs-keyword">in</span>     out     <span class="hljs-built_in">source</span>               destination         
+    3   252 DROP       icmp --  *      *       127.0.0.1            0.0.0.0/0           
+[root@node1 ~]<span class="hljs-comment"># </span>
+[root@node1 ~]<span class="hljs-comment">#</span>
+</div></code></pre>
+<p>我们上面通过 -j 调用 mychain 链，当 INPUT 链中的有数据包满足匹配规则时， 我们让这个包再去 mychain 链进行配置，如果 mychain<br>
+链中没有匹配成功的数据，则结束 mychain ，回到之前的 INPUT 链继续进行匹配。 通过这种自定义链的方式，我们可以将特定功能的<br>
+过滤规则单独存放在一个自定义的链中，方便进行管理。</p>
+<h4 id="614-iptables-%E8%A7%84%E5%88%99%E6%8C%81%E4%B9%85%E6%80%A7">6.1.4 iptables 规则持久性</h4>
+<p>  前面章节我们讲解了 iptables 配置链规则的方法，由于规则是保存在内核内存中的，系统重启后会丢失。因此我们希望使用配置文件<br>
+保存所有的 iptables 规则，方便进行规则重置和系统启动后自动加载。下面我们演示一下使用 iptables-save 保存配置文件</p>
+<pre class="hljs"><code><div>[root@node1 ~]<span class="hljs-comment"># </span>
+[root@node1 ~]<span class="hljs-comment"># iptables -t filter -vnL INPUT</span>
+Chain INPUT (policy ACCEPT 78 packets, 5824 bytes)
+ pkts bytes target     prot opt <span class="hljs-keyword">in</span>     out     <span class="hljs-built_in">source</span>               destination         
+[root@node1 ~]<span class="hljs-comment">#  </span>
+[root@node1 ~]<span class="hljs-comment"># iptables -t filter -A INPUT -s 127.0.0.1 -p icmp -j DROP</span>
+[root@node1 ~]<span class="hljs-comment"># </span>
+[root@node1 ~]<span class="hljs-comment"># </span>
+[root@node1 ~]<span class="hljs-comment"># iptables -t filter -vnL INPUT</span>
+Chain INPUT (policy ACCEPT 8 packets, 580 bytes)
+ pkts bytes target     prot opt <span class="hljs-keyword">in</span>     out     <span class="hljs-built_in">source</span>               destination         
+    0     0 DROP       icmp --  *      *       127.0.0.1            0.0.0.0/0           
+[root@node1 ~]<span class="hljs-comment">#  </span>
+[root@node1 ~]<span class="hljs-comment"># iptables-save -c &gt; /etc/sysconfig/iptables</span>
+[root@node1 ~]<span class="hljs-comment"># </span>
+[root@node1 ~]<span class="hljs-comment">#  </span>
+[root@node1 ~]<span class="hljs-comment"># cat /etc/sysconfig/iptables</span>
+<span class="hljs-comment"># Generated by iptables-save v1.4.21 on Sat May 25 16:03:39 2019</span>
+*security
+:INPUT ACCEPT [7936:627574]
+:FORWARD ACCEPT [0:0]
+:OUTPUT ACCEPT [3594:366792]
+COMMIT
+<span class="hljs-comment"># Completed on Sat May 25 16:03:39 2019</span>
+<span class="hljs-comment"># Generated by iptables-save v1.4.21 on Sat May 25 16:03:39 2019</span>
+*raw
+:PREROUTING ACCEPT [7998:632418]
+:OUTPUT ACCEPT [3622:369360]
+COMMIT
+<span class="hljs-comment"># Completed on Sat May 25 16:03:39 2019</span>
+<span class="hljs-comment"># Generated by iptables-save v1.4.21 on Sat May 25 16:03:39 2019</span>
+*mangle
+:PREROUTING ACCEPT [8030:634894]
+:INPUT ACCEPT [8030:634894]
+:FORWARD ACCEPT [0:0]
+:OUTPUT ACCEPT [3646:371744]
+:POSTROUTING ACCEPT [3646:371744]
+COMMIT
+<span class="hljs-comment"># Completed on Sat May 25 16:03:39 2019</span>
+<span class="hljs-comment"># Generated by iptables-save v1.4.21 on Sat May 25 16:03:39 2019</span>
+*nat
+:PREROUTING ACCEPT [162:23312]
+:INPUT ACCEPT [162:23312]
+:OUTPUT ACCEPT [9:880]
+:POSTROUTING ACCEPT [9:880]
+COMMIT
+<span class="hljs-comment"># Completed on Sat May 25 16:03:39 2019</span>
+<span class="hljs-comment"># Generated by iptables-save v1.4.21 on Sat May 25 16:03:39 2019</span>
+*filter
+:INPUT ACCEPT [332:26408]
+:FORWARD ACCEPT [0:0]
+:OUTPUT ACCEPT [217:22792]
+:mychain - [0:0]
+[0:0] -A INPUT -s 127.0.0.1/32 -p icmp -j DROP
+COMMIT
+<span class="hljs-comment"># Completed on Sat May 25 16:03:39 2019</span>
+[root@node1 ~]<span class="hljs-comment"># </span>
+[root@node1 ~]<span class="hljs-comment">#</span>
+[root@node1 ~]<span class="hljs-comment"># </span>
+[root@node1 ~]<span class="hljs-comment"># iptables -F</span>
+[root@node1 ~]<span class="hljs-comment"># </span>
+[root@node1 ~]<span class="hljs-comment"># </span>
+[root@node1 ~]<span class="hljs-comment"># </span>
+[root@node1 ~]<span class="hljs-comment"># iptables -t filter -vnL</span>
+Chain INPUT (policy ACCEPT 55 packets, 4274 bytes)
+ pkts bytes target     prot opt <span class="hljs-keyword">in</span>     out     <span class="hljs-built_in">source</span>               destination         
+
+Chain FORWARD (policy ACCEPT 0 packets, 0 bytes)
+ pkts bytes target     prot opt <span class="hljs-keyword">in</span>     out     <span class="hljs-built_in">source</span>               destination         
+
+Chain OUTPUT (policy ACCEPT 40 packets, 3704 bytes)
+ pkts bytes target     prot opt <span class="hljs-keyword">in</span>     out     <span class="hljs-built_in">source</span>               destination         
+
+Chain mychain (0 references)
+ pkts bytes target     prot opt <span class="hljs-keyword">in</span>     out     <span class="hljs-built_in">source</span>               destination         
+[root@node1 ~]<span class="hljs-comment"># </span>
+[root@node1 ~]<span class="hljs-comment"># </span>
+[root@node1 ~]<span class="hljs-comment"># </span>
+[root@node1 ~]<span class="hljs-comment"># </span>
+[root@node1 ~]<span class="hljs-comment"># </span>
+[root@node1 ~]<span class="hljs-comment"># iptables-restore -c /etc/sysconfig/iptables</span>
+[root@node1 ~]<span class="hljs-comment"># </span>
+[root@node1 ~]<span class="hljs-comment"># iptables -t filter -vnL</span>
+Chain INPUT (policy ACCEPT 358 packets, 28446 bytes)
+ pkts bytes target     prot opt <span class="hljs-keyword">in</span>     out     <span class="hljs-built_in">source</span>               destination         
+    0     0 DROP       icmp --  *      *       127.0.0.1            0.0.0.0/0           
+
+Chain FORWARD (policy ACCEPT 0 packets, 0 bytes)
+ pkts bytes target     prot opt <span class="hljs-keyword">in</span>     out     <span class="hljs-built_in">source</span>               destination         
+
+Chain OUTPUT (policy ACCEPT 235 packets, 24640 bytes)
+ pkts bytes target     prot opt <span class="hljs-keyword">in</span>     out     <span class="hljs-built_in">source</span>               destination         
+
+Chain mychain (0 references)
+ pkts bytes target     prot opt <span class="hljs-keyword">in</span>     out     <span class="hljs-built_in">source</span>               destination         
+[root@node1 ~]<span class="hljs-comment"># </span>
+[root@node1 ~]<span class="hljs-comment">#</span>
+</div></code></pre>
+<p>上图中我们使用 iptables-save -c 命令将当前的 iptables 规则和数据包统计情况保存于 /etc/sysconfig/iptables 配置文件中。<br>
+然后使用 iptables -F 命令清空所有规则。 要想恢复之前的 iptables 状态和规则，我们可以使用 iptables-restore -c 命令。</p>
+<p>下面我们重启 CentOS7.6 服务器，查看重启后规则是否自动加载</p>
+<pre class="hljs"><code><div>[root@node1 ~]<span class="hljs-comment"># </span>
+[root@node1 ~]<span class="hljs-comment"># init 6</span>
+
+Connection closed by foreign host.
+
+Disconnected from remote host(192.168.130.132:22) at 16:18:23.
+
+Type <span class="hljs-built_in">help</span> to learn how to use Xshell prompt.
+[c:\~]$ ssh 192.168.130.132
+
+
+[c:\~]$ Connecting to 192.168.130.132:22...
+Connection established.
+To escape to <span class="hljs-built_in">local</span> shell, press <span class="hljs-string">'Ctrl+Alt+]'</span>.
+
+WARNING! The remote SSH server rejected X11 forwarding request.
+Last login: Sat May 25 09:22:16 2019 from 192.168.130.1
+[root@node1 ~]<span class="hljs-comment"># </span>
+[root@node1 ~]<span class="hljs-comment"># </span>
+[root@node1 ~]<span class="hljs-comment"># iptables -t filter -vnL</span>
+Chain INPUT (policy ACCEPT 0 packets, 0 bytes)
+ pkts bytes target     prot opt <span class="hljs-keyword">in</span>     out     <span class="hljs-built_in">source</span>               destination         
+
+Chain FORWARD (policy ACCEPT 0 packets, 0 bytes)
+ pkts bytes target     prot opt <span class="hljs-keyword">in</span>     out     <span class="hljs-built_in">source</span>               destination         
+
+Chain OUTPUT (policy ACCEPT 0 packets, 0 bytes)
+ pkts bytes target     prot opt <span class="hljs-keyword">in</span>     out     <span class="hljs-built_in">source</span>               destination         
+[root@node1 ~]<span class="hljs-comment"># </span>
+[root@node1 ~]<span class="hljs-comment"># </span>
+</div></code></pre>
+<p>上图中我们发现系统重启后并没加载配置文件中的 iptables 规则。 这是因为 CentOS7 启动时没有执行 iptables-restore 命令。下面我们<br>
+通过安装 iptables-services 软件包来实现这个功能</p>
+<pre class="hljs"><code><div>[root@node1 ~]<span class="hljs-comment"># </span>
+[root@node1 ~]<span class="hljs-comment"># yum install -y iptables-services</span>
+Loaded plugins: fastestmirror
+Loading mirror speeds from cached hostfile
+ * base: mirrors.huaweicloud.com
+ * extras: mirror.bit.edu.cn
+ * updates: mirror.jdcloud.com
+Package iptables-services-1.4.21-28.el7.x86_64 already installed and latest version
+Nothing to <span class="hljs-keyword">do</span>
+[root@node1 ~]<span class="hljs-comment">#</span>
+[root@node1 ~]<span class="hljs-comment">#</span>
+[root@node1 ~]<span class="hljs-comment"># service iptables start</span>
+Redirecting to /bin/systemctl start iptables.service
+[root@node1 ~]<span class="hljs-comment">#</span>
+[root@node1 ~]<span class="hljs-comment"># </span>
+[root@node1 ~]<span class="hljs-comment"># chkconfig  iptables on</span>
+Note: Forwarding request to <span class="hljs-string">'systemctl enable iptables.service'</span>.
+Created symlink from /etc/systemd/system/basic.target.wants/iptables.service to /usr/lib/systemd/system/iptables.service.
+[root@node1 ~]<span class="hljs-comment"># </span>
+[root@node1 ~]<span class="hljs-comment">#</span>
+[root@node1 ~]<span class="hljs-comment"># </span>
+[root@node1 ~]<span class="hljs-comment"># init 6</span>
+
+Connection closed by foreign host.
+
+Disconnected from remote host(192.168.130.132:22) at 16:48:40.
+
+Type <span class="hljs-built_in">help</span> to learn how to use Xshell prompt.
+[c:\~]$ 
+[c:\~]$ 
+[c:\~]$ ssh 192.168.130.132
+
+
+[c:\~]$ Connecting to 192.168.130.132:22...
+Connection established.
+To escape to <span class="hljs-built_in">local</span> shell, press <span class="hljs-string">'Ctrl+Alt+]'</span>.
+
+WARNING! The remote SSH server rejected X11 forwarding request.
+Last login: Sat May 25 16:21:48 2019 from 192.168.130.1
+[root@node1 ~]<span class="hljs-comment"># </span>
+[root@node1 ~]<span class="hljs-comment"># </span>
+[root@node1 ~]<span class="hljs-comment"># iptables -t filter -vnL</span>
+Chain INPUT (policy ACCEPT 88 packets, 7802 bytes)
+ pkts bytes target     prot opt <span class="hljs-keyword">in</span>     out     <span class="hljs-built_in">source</span>               destination         
+    0     0 DROP       icmp --  *      *       127.0.0.1            0.0.0.0/0           
+
+Chain FORWARD (policy ACCEPT 0 packets, 0 bytes)
+ pkts bytes target     prot opt <span class="hljs-keyword">in</span>     out     <span class="hljs-built_in">source</span>               destination         
+
+Chain OUTPUT (policy ACCEPT 66 packets, 8047 bytes)
+ pkts bytes target     prot opt <span class="hljs-keyword">in</span>     out     <span class="hljs-built_in">source</span>               destination         
+
+Chain mychain (0 references)
+ pkts bytes target     prot opt <span class="hljs-keyword">in</span>     out     <span class="hljs-built_in">source</span>               destination         
+[root@node1 ~]<span class="hljs-comment"># </span>
+[root@node1 ~]<span class="hljs-comment">#</span>
+</div></code></pre>
+<p>安装完 iptables-services 后添加开机启动服务，重启后发现 iptables 规则自动加载</p>
+
+</body>
+</html>

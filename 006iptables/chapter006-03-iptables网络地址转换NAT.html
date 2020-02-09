@@ -1,0 +1,851 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>chapter006-03-iptables网络地址转换NAT.md</title>
+<meta http-equiv="Content-type" content="text/html;charset=UTF-8">
+
+<style>
+/*---------------------------------------------------------------------------------------------
+ *  Copyright (c) Microsoft Corporation. All rights reserved.
+ *  Licensed under the MIT License. See License.txt in the project root for license information.
+ *--------------------------------------------------------------------------------------------*/
+
+body {
+	font-family: "Segoe WPC", "Segoe UI", "SFUIText-Light", "HelveticaNeue-Light", sans-serif, "Droid Sans Fallback";
+	font-size: 14px;
+	padding: 0 12px;
+	line-height: 22px;
+	word-wrap: break-word;
+}
+
+#code-csp-warning {
+	position: fixed;
+	top: 0;
+	right: 0;
+	color: white;
+	margin: 16px;
+	text-align: center;
+	font-size: 12px;
+	font-family: sans-serif;
+	background-color:#444444;
+	cursor: pointer;
+	padding: 6px;
+	box-shadow: 1px 1px 1px rgba(0,0,0,.25);
+}
+
+#code-csp-warning:hover {
+	text-decoration: none;
+	background-color:#007acc;
+	box-shadow: 2px 2px 2px rgba(0,0,0,.25);
+}
+
+
+body.scrollBeyondLastLine {
+	margin-bottom: calc(100vh - 22px);
+}
+
+body.showEditorSelection .code-line {
+	position: relative;
+}
+
+body.showEditorSelection .code-active-line:before,
+body.showEditorSelection .code-line:hover:before {
+	content: "";
+	display: block;
+	position: absolute;
+	top: 0;
+	left: -12px;
+	height: 100%;
+}
+
+body.showEditorSelection li.code-active-line:before,
+body.showEditorSelection li.code-line:hover:before {
+	left: -30px;
+}
+
+.vscode-light.showEditorSelection .code-active-line:before {
+	border-left: 3px solid rgba(0, 0, 0, 0.15);
+}
+
+.vscode-light.showEditorSelection .code-line:hover:before {
+	border-left: 3px solid rgba(0, 0, 0, 0.40);
+}
+
+.vscode-dark.showEditorSelection .code-active-line:before {
+	border-left: 3px solid rgba(255, 255, 255, 0.4);
+}
+
+.vscode-dark.showEditorSelection .code-line:hover:before {
+	border-left: 3px solid rgba(255, 255, 255, 0.60);
+}
+
+.vscode-high-contrast.showEditorSelection .code-active-line:before {
+	border-left: 3px solid rgba(255, 160, 0, 0.7);
+}
+
+.vscode-high-contrast.showEditorSelection .code-line:hover:before {
+	border-left: 3px solid rgba(255, 160, 0, 1);
+}
+
+img {
+	max-width: 100%;
+	max-height: 100%;
+}
+
+a {
+	color: #4080D0;
+	text-decoration: none;
+}
+
+a:focus,
+input:focus,
+select:focus,
+textarea:focus {
+	outline: 1px solid -webkit-focus-ring-color;
+	outline-offset: -1px;
+}
+
+hr {
+	border: 0;
+	height: 2px;
+	border-bottom: 2px solid;
+}
+
+h1 {
+	padding-bottom: 0.3em;
+	line-height: 1.2;
+	border-bottom-width: 1px;
+	border-bottom-style: solid;
+}
+
+h1, h2, h3 {
+	font-weight: normal;
+}
+
+h1 code,
+h2 code,
+h3 code,
+h4 code,
+h5 code,
+h6 code {
+	font-size: inherit;
+	line-height: auto;
+}
+
+a:hover {
+	color: #4080D0;
+	text-decoration: underline;
+}
+
+table {
+	border-collapse: collapse;
+}
+
+table > thead > tr > th {
+	text-align: left;
+	border-bottom: 1px solid;
+}
+
+table > thead > tr > th,
+table > thead > tr > td,
+table > tbody > tr > th,
+table > tbody > tr > td {
+	padding: 5px 10px;
+}
+
+table > tbody > tr + tr > td {
+	border-top: 1px solid;
+}
+
+blockquote {
+	margin: 0 7px 0 5px;
+	padding: 0 16px 0 10px;
+	border-left: 5px solid;
+}
+
+code {
+	font-family: Menlo, Monaco, Consolas, "Droid Sans Mono", "Courier New", monospace, "Droid Sans Fallback";
+	font-size: 14px;
+	line-height: 19px;
+}
+
+body.wordWrap pre {
+	white-space: pre-wrap;
+}
+
+.mac code {
+	font-size: 12px;
+	line-height: 18px;
+}
+
+pre:not(.hljs),
+pre.hljs code > div {
+	padding: 16px;
+	border-radius: 3px;
+	overflow: auto;
+}
+
+/** Theming */
+
+.vscode-light,
+.vscode-light pre code {
+	color: rgb(30, 30, 30);
+}
+
+.vscode-dark,
+.vscode-dark pre code {
+	color: #DDD;
+}
+
+.vscode-high-contrast,
+.vscode-high-contrast pre code {
+	color: white;
+}
+
+.vscode-light code {
+	color: #A31515;
+}
+
+.vscode-dark code {
+	color: #D7BA7D;
+}
+
+.vscode-light pre:not(.hljs),
+.vscode-light code > div {
+	background-color: rgba(220, 220, 220, 0.4);
+}
+
+.vscode-dark pre:not(.hljs),
+.vscode-dark code > div {
+	background-color: rgba(10, 10, 10, 0.4);
+}
+
+.vscode-high-contrast pre:not(.hljs),
+.vscode-high-contrast code > div {
+	background-color: rgb(0, 0, 0);
+}
+
+.vscode-high-contrast h1 {
+	border-color: rgb(0, 0, 0);
+}
+
+.vscode-light table > thead > tr > th {
+	border-color: rgba(0, 0, 0, 0.69);
+}
+
+.vscode-dark table > thead > tr > th {
+	border-color: rgba(255, 255, 255, 0.69);
+}
+
+.vscode-light h1,
+.vscode-light hr,
+.vscode-light table > tbody > tr + tr > td {
+	border-color: rgba(0, 0, 0, 0.18);
+}
+
+.vscode-dark h1,
+.vscode-dark hr,
+.vscode-dark table > tbody > tr + tr > td {
+	border-color: rgba(255, 255, 255, 0.18);
+}
+
+.vscode-light blockquote,
+.vscode-dark blockquote {
+	background: rgba(127, 127, 127, 0.1);
+	border-color: rgba(0, 122, 204, 0.5);
+}
+
+.vscode-high-contrast blockquote {
+	background: transparent;
+	border-color: #fff;
+}
+</style>
+
+<style>
+/* Tomorrow Theme */
+/* http://jmblog.github.com/color-themes-for-google-code-highlightjs */
+/* Original theme - https://github.com/chriskempson/tomorrow-theme */
+
+/* Tomorrow Comment */
+.hljs-comment,
+.hljs-quote {
+	color: #8e908c;
+}
+
+/* Tomorrow Red */
+.hljs-variable,
+.hljs-template-variable,
+.hljs-tag,
+.hljs-name,
+.hljs-selector-id,
+.hljs-selector-class,
+.hljs-regexp,
+.hljs-deletion {
+	color: #c82829;
+}
+
+/* Tomorrow Orange */
+.hljs-number,
+.hljs-built_in,
+.hljs-builtin-name,
+.hljs-literal,
+.hljs-type,
+.hljs-params,
+.hljs-meta,
+.hljs-link {
+	color: #f5871f;
+}
+
+/* Tomorrow Yellow */
+.hljs-attribute {
+	color: #eab700;
+}
+
+/* Tomorrow Green */
+.hljs-string,
+.hljs-symbol,
+.hljs-bullet,
+.hljs-addition {
+	color: #718c00;
+}
+
+/* Tomorrow Blue */
+.hljs-title,
+.hljs-section {
+	color: #4271ae;
+}
+
+/* Tomorrow Purple */
+.hljs-keyword,
+.hljs-selector-tag {
+	color: #8959a8;
+}
+
+.hljs {
+	display: block;
+	overflow-x: auto;
+	color: #4d4d4c;
+	padding: 0.5em;
+}
+
+.hljs-emphasis {
+	font-style: italic;
+}
+
+.hljs-strong {
+	font-weight: bold;
+}
+</style>
+
+<style>
+/*
+ * Markdown PDF CSS
+ */
+
+ body {
+	font-family:  "Meiryo", "Segoe WPC", "Segoe UI", "SFUIText-Light", "HelveticaNeue-Light", sans-serif, "Droid Sans Fallback";
+}
+
+pre {
+	background-color: #f8f8f8;
+	border: 1px solid #cccccc;
+	border-radius: 3px;
+	overflow-x: auto;
+	white-space: pre-wrap;
+	overflow-wrap: break-word;
+}
+
+pre:not(.hljs) {
+	padding: 23px;
+	line-height: 19px;
+}
+
+blockquote {
+	background: rgba(127, 127, 127, 0.1);
+	border-color: rgba(0, 122, 204, 0.5);
+}
+
+.emoji {
+	height: 1.4em;
+}
+
+/* for inline code */
+:not(pre):not(.hljs) > code {
+	color: #C9AE75; /* Change the old color so it seems less like an error */
+	font-size: inherit;
+}
+
+/* Page Break : use <div class="page"/> to insert page break
+-------------------------------------------------------- */
+.page {
+	page-break-after: always;
+}
+
+</style>
+
+</head>
+<body>
+<h2 id="%E7%AC%AC%E5%85%AD%E7%AB%A0-linux-%E9%98%B2%E7%81%AB%E5%A2%99%E9%85%8D%E7%BD%AE%E4%B8%8E%E7%AE%A1%E7%90%86">第六章 Linux 防火墙配置与管理</h2>
+<h3 id="%E7%AC%AC%E4%B8%89%E8%8A%82-iptables-%E7%BD%91%E7%BB%9C%E5%9C%B0%E5%9D%80%E8%BD%AC%E6%8D%A2-nat">第三节  iptables 网络地址转换 NAT</h3>
+<h4 id="631-centos76-%E4%B8%AD%E9%85%8D%E7%BD%AE-iptables-snat-%E7%BD%91%E7%BB%9C%E6%A8%A1%E5%9E%8B">6.3.1 CentOS7.6 中配置 iptables SNAT 网络模型</h4>
+<pre class="hljs"><code><div>
+1. 本次实验的网络环境：
+   nat   网络的     网段是 192.168.10.0  网关地址是 192.168.10.2
+   仅主机 网络的     网段是  10.20.0.0
+
+
+
+2. 我们准备三台 CentOS7.6 服务器，关闭 selinux， 清空防火墙规则
+   三台主机中，node0 使用 nat 网卡模拟外网，node2 使用仅主机网卡模拟内网，node1 同时使用两块网卡
+
+主机名              ip地址              
+node0               192.168.10.10
+node1               192.168.10.20   10.20.100.102
+node2                               10.20.100.103
+
+node0 主机:
+[root@node0 ~]<span class="hljs-comment"># </span>
+[root@node0 ~]<span class="hljs-comment"># getenforce </span>
+Permissive
+[root@node0 ~]<span class="hljs-comment"># </span>
+[root@node0 ~]<span class="hljs-comment"># hostname</span>
+node0
+[root@node0 ~]<span class="hljs-comment"># </span>
+[root@node0 ~]<span class="hljs-comment"># iptables -vnL</span>
+Chain INPUT (policy ACCEPT 0 packets, 0 bytes)
+ pkts bytes target     prot opt <span class="hljs-keyword">in</span>     out     <span class="hljs-built_in">source</span>               destination         
+
+Chain FORWARD (policy ACCEPT 0 packets, 0 bytes)
+ pkts bytes target     prot opt <span class="hljs-keyword">in</span>     out     <span class="hljs-built_in">source</span>               destination         
+
+Chain OUTPUT (policy ACCEPT 0 packets, 0 bytes)
+ pkts bytes target     prot opt <span class="hljs-keyword">in</span>     out     <span class="hljs-built_in">source</span>               destination         
+[root@node0 ~]<span class="hljs-comment"># </span>
+[root@node0 ~]<span class="hljs-comment">#</span>
+
+[root@node0 ~]<span class="hljs-comment"># cat /etc/sysconfig/network-scripts/ifcfg-ens33 </span>
+TYPE=<span class="hljs-string">"Ethernet"</span>
+ONBOOT=<span class="hljs-string">"yes"</span>
+NAME=<span class="hljs-string">"ens33"</span>
+DEVICE=<span class="hljs-string">"ens33"</span>
+BOOTPROTO=<span class="hljs-string">"static"</span>
+IPADDR=<span class="hljs-string">"192.168.10.10"</span>
+NETMASK=<span class="hljs-string">"255.255.255.0"</span>
+GATEWAY=<span class="hljs-string">"192.168.10.2"</span>
+DNS1=<span class="hljs-string">"223.6.6.6"</span>
+[root@node0 ~]<span class="hljs-comment"># </span>
+[root@node0 ~]<span class="hljs-comment"># vi /etc/sysconfig/network-scripts/route-ens33</span>
+[root@node0 ~]<span class="hljs-comment"># </span>
+[root@node0 ~]<span class="hljs-comment"># cat /etc/sysconfig/network-scripts/route-ens33</span>
+10.20.0.0/16 via 192.168.10.20 dev ens33
+[root@node0 ~]<span class="hljs-comment"># </span>
+[root@node0 ~]<span class="hljs-comment"># </span>
+[root@node0 ~]<span class="hljs-comment"># service network restart </span>
+Restarting network (via systemctl):                        [  OK  ]
+[root@node0 ~]<span class="hljs-comment"># </span>
+[root@node0 ~]<span class="hljs-comment">#</span>
+[root@node0 ~]<span class="hljs-comment"># </span>
+[root@node0 ~]<span class="hljs-comment"># ip a</span>
+1: lo: &lt;LOOPBACK,UP,LOWER_UP&gt; mtu 65536 qdisc noqueue state UNKNOWN group default qlen 1000
+    link/loopback 00:00:00:00:00:00 brd 00:00:00:00:00:00
+    inet 127.0.0.1/8 scope host lo
+       valid_lft forever preferred_lft forever
+    inet6 ::1/128 scope host 
+       valid_lft forever preferred_lft forever
+2: ens33: &lt;BROADCAST,MULTICAST,UP,LOWER_UP&gt; mtu 1500 qdisc pfifo_fast state UP group default qlen 1000
+    link/ether 00:0c:29:c5:14:0d brd ff:ff:ff:ff:ff:ff
+    inet 192.168.10.10/24 brd 192.168.10.255 scope global noprefixroute ens33
+       valid_lft forever preferred_lft forever
+    inet6 fe80::20c:29ff:fec5:140d/64 scope link 
+       valid_lft forever preferred_lft forever
+[root@node0 ~]<span class="hljs-comment"># </span>
+[root@node0 ~]<span class="hljs-comment"># ip r</span>
+default via 192.168.10.2 dev ens33 proto static metric 100 
+10.20.0.0/16 via 192.168.10.20 dev ens33 proto static metric 100 
+192.168.10.0/24 dev ens33 proto kernel scope link src 192.168.10.10 metric 100 
+[root@node0 ~]<span class="hljs-comment">#</span>
+[root@node0 ~]<span class="hljs-comment"># </span>
+[root@node0 ~]<span class="hljs-comment"># iptables -vnL</span>
+Chain INPUT (policy ACCEPT 21691 packets, 44M bytes)
+ pkts bytes target     prot opt <span class="hljs-keyword">in</span>     out     <span class="hljs-built_in">source</span>               destination         
+
+Chain FORWARD (policy ACCEPT 0 packets, 0 bytes)
+ pkts bytes target     prot opt <span class="hljs-keyword">in</span>     out     <span class="hljs-built_in">source</span>               destination         
+
+Chain OUTPUT (policy ACCEPT 1061 packets, 114K bytes)
+ pkts bytes target     prot opt <span class="hljs-keyword">in</span>     out     <span class="hljs-built_in">source</span>               destination         
+[root@node0 ~]<span class="hljs-comment"># </span>
+[root@node0 ~]<span class="hljs-comment">#</span>
+[root@node0 ~]<span class="hljs-comment"># ping www.baidu.com</span>
+PING www.a.shifen.com (61.135.169.125) 56(84) bytes of data.
+64 bytes from 61.135.169.125 (61.135.169.125): icmp_seq=1 ttl=128 time=3.37 ms
+64 bytes from 61.135.169.125 (61.135.169.125): icmp_seq=2 ttl=128 time=4.09 ms
+^C
+--- www.a.shifen.com ping statistics ---
+2 packets transmitted, 2 received, 0% packet loss, time 1002ms
+rtt min/avg/max/mdev = 3.375/3.735/4.095/0.360 ms
+[root@node0 ~]<span class="hljs-comment">#</span>
+[root@node0 ~]<span class="hljs-comment"># </span>
+[root@node0 ~]<span class="hljs-comment"># yum install httpd -y </span>
+Loaded plugins: fastestmirror
+Loading mirror speeds from cached hostfile
+ * base: mirrors.huaweicloud.com
+ * extras: mirrors.huaweicloud.com
+ * updates: mirrors.huaweicloud.com
+Package httpd-2.4.6-89.el7.centos.1.x86_64 already installed and latest version
+Nothing to <span class="hljs-keyword">do</span>
+[root@node0 ~]<span class="hljs-comment"># </span>
+[root@node0 ~]<span class="hljs-comment"># </span>
+[root@node0 ~]<span class="hljs-comment"># systemctl restart httpd</span>
+[root@node0 ~]<span class="hljs-comment">#  </span>
+[root@node0 ~]<span class="hljs-comment"># echo 'www.magedu.com by node0' &gt; /var/www/html/index.html</span>
+[root@node0 ~]<span class="hljs-comment"># </span>
+[root@node0 ~]<span class="hljs-comment"># curl 127.0.0.1</span>
+www.magedu.com by node0
+[root@node0 ~]<span class="hljs-comment"># </span>
+[root@node0 ~]<span class="hljs-comment"># </span>
+
+
+
+
+node1 主机:
+[root@node1 ~]<span class="hljs-comment"># </span>
+[root@node1 ~]<span class="hljs-comment"># getenforce </span>
+Permissive
+[root@node1 ~]<span class="hljs-comment"># </span>
+[root@node1 ~]<span class="hljs-comment"># hostname</span>
+node1
+[root@node1 ~]<span class="hljs-comment"># </span>
+[root@node1 ~]<span class="hljs-comment"># </span>
+[root@node1 ~]<span class="hljs-comment"># iptables -vnL</span>
+Chain INPUT (policy ACCEPT 0 packets, 0 bytes)
+ pkts bytes target     prot opt <span class="hljs-keyword">in</span>     out     <span class="hljs-built_in">source</span>               destination         
+
+Chain FORWARD (policy ACCEPT 0 packets, 0 bytes)
+ pkts bytes target     prot opt <span class="hljs-keyword">in</span>     out     <span class="hljs-built_in">source</span>               destination         
+
+Chain OUTPUT (policy ACCEPT 0 packets, 0 bytes)
+ pkts bytes target     prot opt <span class="hljs-keyword">in</span>     out     <span class="hljs-built_in">source</span>               destination         
+[root@node1 ~]<span class="hljs-comment"># </span>
+[root@node1 ~]<span class="hljs-comment"># </span>
+[root@node1 ~]<span class="hljs-comment"># </span>
+[root@node1 ~]<span class="hljs-comment"># cat /etc/sysconfig/network-scripts/ifcfg-ens33</span>
+TYPE=<span class="hljs-string">"Ethernet"</span>
+BOOTPROTO=<span class="hljs-string">"static"</span>
+NAME=<span class="hljs-string">"ens33"</span>
+DEVICE=<span class="hljs-string">"ens33"</span>
+ONBOOT=<span class="hljs-string">"yes"</span>
+IPADDR=<span class="hljs-string">"192.168.10.20"</span>
+NETMASK=<span class="hljs-string">"255.255.255.0"</span>
+[root@node1 ~]<span class="hljs-comment"># </span>
+[root@node1 ~]<span class="hljs-comment"># </span>
+[root@node1 ~]<span class="hljs-comment"># cat /etc/sysconfig/network-scripts/ifcfg-ens37</span>
+TYPE=<span class="hljs-string">"Ethernet"</span>
+BOOTPROTO=<span class="hljs-string">"static"</span>
+NAME=<span class="hljs-string">"ens33"</span>
+DEVICE=<span class="hljs-string">"ens33"</span>
+ONBOOT=<span class="hljs-string">"yes"</span>
+IPADDR=<span class="hljs-string">"10.20.100.102"</span>
+NETMASK=<span class="hljs-string">"255.255.255.0"</span>
+[root@node1 ~]<span class="hljs-comment"># </span>
+[root@node1 ~]<span class="hljs-comment">#</span>
+[root@node1 ~]<span class="hljs-comment"># </span>
+[root@node1 ~]<span class="hljs-comment"># ip a</span>
+1: lo: &lt;LOOPBACK,UP,LOWER_UP&gt; mtu 65536 qdisc noqueue state UNKNOWN group default qlen 1000
+    link/loopback 00:00:00:00:00:00 brd 00:00:00:00:00:00
+    inet 127.0.0.1/8 scope host lo
+       valid_lft forever preferred_lft forever
+    inet6 ::1/128 scope host 
+       valid_lft forever preferred_lft forever
+2: ens33: &lt;BROADCAST,MULTICAST,UP,LOWER_UP&gt; mtu 1500 qdisc pfifo_fast state UP group default qlen 1000
+    link/ether 00:0c:29:a7:db:80 brd ff:ff:ff:ff:ff:ff
+    inet 192.168.10.20/24 brd 192.168.10.255 scope global noprefixroute ens33
+       valid_lft forever preferred_lft forever
+    inet6 fe80::20c:29ff:fea7:db80/64 scope link 
+       valid_lft forever preferred_lft forever
+3: ens37: &lt;BROADCAST,MULTICAST,UP,LOWER_UP&gt; mtu 1500 qdisc pfifo_fast state UP group default qlen 1000
+    link/ether 00:0c:29:a7:db:8a brd ff:ff:ff:ff:ff:ff
+    inet 10.20.100.102/16 brd 10.20.255.255 scope global noprefixroute dynamic ens37
+       valid_lft 691752sec preferred_lft 691752sec
+    inet6 fe80::b748:f69c:2a67:8d18/64 scope link noprefixroute 
+       valid_lft forever preferred_lft forever
+[root@node1 ~]<span class="hljs-comment"># </span>
+[root@node1 ~]<span class="hljs-comment">#</span>
+[root@node1 ~]<span class="hljs-comment"># iptables -vnL</span>
+Chain INPUT (policy ACCEPT 0 packets, 0 bytes)
+ pkts bytes target     prot opt <span class="hljs-keyword">in</span>     out     <span class="hljs-built_in">source</span>               destination         
+
+Chain FORWARD (policy ACCEPT 0 packets, 0 bytes)
+ pkts bytes target     prot opt <span class="hljs-keyword">in</span>     out     <span class="hljs-built_in">source</span>               destination         
+
+Chain OUTPUT (policy ACCEPT 0 packets, 0 bytes)
+ pkts bytes target     prot opt <span class="hljs-keyword">in</span>     out     <span class="hljs-built_in">source</span>               destination         
+[root@node1 ~]<span class="hljs-comment"># </span>
+[root@node1 ~]<span class="hljs-comment">#</span>
+
+
+node2:
+[root@node2 ~]<span class="hljs-comment"># </span>
+[root@node2 ~]<span class="hljs-comment"># getenforce </span>
+Permissive
+[root@node2 ~]<span class="hljs-comment"># </span>
+[root@node2 ~]<span class="hljs-comment"># hostname</span>
+node2
+[root@node2 ~]<span class="hljs-comment"># </span>
+[root@node2 ~]<span class="hljs-comment"># </span>
+[root@node2 ~]<span class="hljs-comment"># iptables -vnL</span>
+Chain INPUT (policy ACCEPT 0 packets, 0 bytes)
+ pkts bytes target     prot opt <span class="hljs-keyword">in</span>     out     <span class="hljs-built_in">source</span>               destination         
+
+Chain FORWARD (policy ACCEPT 0 packets, 0 bytes)
+ pkts bytes target     prot opt <span class="hljs-keyword">in</span>     out     <span class="hljs-built_in">source</span>               destination         
+
+Chain OUTPUT (policy ACCEPT 0 packets, 0 bytes)
+ pkts bytes target     prot opt <span class="hljs-keyword">in</span>     out     <span class="hljs-built_in">source</span>               destination         
+[root@node2 ~]<span class="hljs-comment"># </span>
+[root@node2 ~]<span class="hljs-comment"># </span>
+[root@node2 ~]<span class="hljs-comment"># cat /etc/sysconfig/network-scripts/ifcfg-ens33 </span>
+TYPE=<span class="hljs-string">"Ethernet"</span>
+BOOTPROTO=<span class="hljs-string">"static"</span>
+NAME=<span class="hljs-string">"ens33"</span>
+DEVICE=<span class="hljs-string">"ens33"</span>
+ONBOOT=<span class="hljs-string">"yes"</span>
+IPADDR=<span class="hljs-string">"10.20.100.103"</span>
+NETMASK=<span class="hljs-string">"255.255.0.0"</span>
+GATEWAY=<span class="hljs-string">"10.20.100.102"</span>
+[root@node2 ~]<span class="hljs-comment"># </span>
+[root@node2 ~]<span class="hljs-comment"># ip a</span>
+1: lo: &lt;LOOPBACK,UP,LOWER_UP&gt; mtu 65536 qdisc noqueue state UNKNOWN group default qlen 1000
+    link/loopback 00:00:00:00:00:00 brd 00:00:00:00:00:00
+    inet 127.0.0.1/8 scope host lo
+       valid_lft forever preferred_lft forever
+    inet6 ::1/128 scope host 
+       valid_lft forever preferred_lft forever
+2: ens33: &lt;BROADCAST,MULTICAST,UP,LOWER_UP&gt; mtu 1500 qdisc pfifo_fast state UP group default qlen 1000
+    link/ether 00:0c:29:8e:2c:5f brd ff:ff:ff:ff:ff:ff
+    inet 10.20.100.103/16 brd 10.20.255.255 scope global noprefixroute ens33
+       valid_lft forever preferred_lft forever
+[root@node2 ~]<span class="hljs-comment"># </span>
+[root@node2 ~]
+[root@node2 ~]<span class="hljs-comment"># iptables -vnL</span>
+Chain INPUT (policy ACCEPT 22959 packets, 1886K bytes)
+ pkts bytes target     prot opt <span class="hljs-keyword">in</span>     out     <span class="hljs-built_in">source</span>               destination         
+
+Chain FORWARD (policy ACCEPT 0 packets, 0 bytes)
+ pkts bytes target     prot opt <span class="hljs-keyword">in</span>     out     <span class="hljs-built_in">source</span>               destination         
+
+Chain OUTPUT (policy ACCEPT 2817 packets, 202K bytes)
+ pkts bytes target     prot opt <span class="hljs-keyword">in</span>     out     <span class="hljs-built_in">source</span>               destination         
+[root@node2 ~]<span class="hljs-comment"># </span>
+[root@node2 ~]<span class="hljs-comment">#</span>
+
+
+3. 开启 node1 的核心转发功能
+[root@node1 ~]<span class="hljs-comment"># vi /etc/sysctl.conf </span>
+[root@node1 ~]<span class="hljs-comment"># </span>
+[root@node1 ~]<span class="hljs-comment"># cat /etc/sysctl.conf </span>
+net.ipv4.ip_forward = 1
+[root@node1 ~]<span class="hljs-comment"># </span>
+[root@node1 ~]<span class="hljs-comment"># sysctl -p</span>
+net.ipv4.ip_forward = 1
+[root@node1 ~]<span class="hljs-comment">#</span>
+[root@node1 ~]<span class="hljs-comment">#</span>
+
+4. node0 和 node2 可以相互 ping 通
+node0 ping node2:
+[root@node0 ~]<span class="hljs-comment"># ping 10.20.100.103</span>
+PING 10.20.100.103 (10.20.100.103) 56(84) bytes of data.
+64 bytes from 10.20.100.103: icmp_seq=1 ttl=63 time=2.52 ms
+64 bytes from 10.20.100.103: icmp_seq=2 ttl=63 time=0.425 ms
+64 bytes from 10.20.100.103: icmp_seq=3 ttl=63 time=0.420 ms
+^C
+--- 10.20.100.103 ping statistics ---
+3 packets transmitted, 3 received, 0% packet loss, time 2002ms
+rtt min/avg/max/mdev = 0.420/1.123/2.525/0.991 ms
+[root@node0 ~]<span class="hljs-comment"># </span>
+[root@node0 ~]<span class="hljs-comment">#</span>
+
+
+node2 ping node0:
+[root@node2 ~]<span class="hljs-comment"># ping 192.168.10.10</span>
+PING 192.168.10.10 (192.168.10.10) 56(84) bytes of data.
+64 bytes from 192.168.10.10: icmp_seq=1 ttl=63 time=2.29 ms
+64 bytes from 192.168.10.10: icmp_seq=2 ttl=63 time=0.520 ms
+64 bytes from 192.168.10.10: icmp_seq=3 ttl=63 time=0.416 ms
+^C
+--- 192.168.10.10 ping statistics ---
+3 packets transmitted, 3 received, 0% packet loss, time 2002ms
+rtt min/avg/max/mdev = 0.416/1.078/2.299/0.864 ms
+[root@node2 ~]
+
+node2 可以访问 node0 的 web 服务
+[root@node2 ~]<span class="hljs-comment"># curl 192.168.10.10</span>
+www.magedu.com by node0
+[root@node2 ~]<span class="hljs-comment"># </span>
+
+我们查看 node0 的 httpd 访问日志， 发现原地址分别为 node0 和 node2
+[root@node0 ~]<span class="hljs-comment"># cat /var/log/httpd/access_log </span>
+
+192.168.10.10 - - [05/Aug/2019:14:19:25 +0800] <span class="hljs-string">"GET / HTTP/1.1"</span> 200 24 <span class="hljs-string">"-"</span> <span class="hljs-string">"curl/7.29.0"</span>
+10.20.100.103 - - [05/Aug/2019:14:19:39 +0800] <span class="hljs-string">"GET / HTTP/1.1"</span> 200 24 <span class="hljs-string">"-"</span> <span class="hljs-string">"curl/7.29.0"</span>
+[root@node0 ~]<span class="hljs-comment">#</span>
+
+
+5. 下面我们在 node1 上添加 snat 转发规则
+[root@node1 ~]<span class="hljs-comment"># iptables -t nat -A POSTROUTING -s 10.20.0.0/16 ! -d 10.20.0.0/16 -j SNAT --to-source 192.168.10.20</span>
+[root@node1 ~]<span class="hljs-comment"># </span>
+[root@node1 ~]<span class="hljs-comment"># iptables -t nat -vnL</span>
+Chain PREROUTING (policy ACCEPT 3 packets, 216 bytes)
+ pkts bytes target     prot opt <span class="hljs-keyword">in</span>     out     <span class="hljs-built_in">source</span>               destination         
+
+Chain INPUT (policy ACCEPT 2 packets, 156 bytes)
+ pkts bytes target     prot opt <span class="hljs-keyword">in</span>     out     <span class="hljs-built_in">source</span>               destination         
+
+Chain OUTPUT (policy ACCEPT 0 packets, 0 bytes)
+ pkts bytes target     prot opt <span class="hljs-keyword">in</span>     out     <span class="hljs-built_in">source</span>               destination         
+
+Chain POSTROUTING (policy ACCEPT 0 packets, 0 bytes)
+ pkts bytes target     prot opt <span class="hljs-keyword">in</span>     out     <span class="hljs-built_in">source</span>               destination         
+    1    60 SNAT       all  --  *      *       10.20.0.0/16        !10.20.0.0/16         to:192.168.10.20
+[root@node1 ~]<span class="hljs-comment"># </span>
+[root@node1 ~]<span class="hljs-comment"># </span>
+[root@node1 ~]<span class="hljs-comment">#</span>
+
+实验 node2 访问 node0 的 web 服务
+[root@node2 ~]<span class="hljs-comment"># curl 192.168.10.10</span>
+www.magedu.com by node0
+[root@node2 ~]<span class="hljs-comment">#</span>
+
+查看 node0 的 httpd 访问日志，发现 SNAT 实验成果
+[root@node0 ~]<span class="hljs-comment"># cat /var/log/httpd/access_log </span>
+
+192.168.10.10 - - [05/Aug/2019:14:19:25 +0800] <span class="hljs-string">"GET / HTTP/1.1"</span> 200 24 <span class="hljs-string">"-"</span> <span class="hljs-string">"curl/7.29.0"</span>
+10.20.100.103 - - [05/Aug/2019:14:19:39 +0800] <span class="hljs-string">"GET / HTTP/1.1"</span> 200 24 <span class="hljs-string">"-"</span> <span class="hljs-string">"curl/7.29.0"</span>
+192.168.10.20 - - [05/Aug/2019:14:19:50 +0800] <span class="hljs-string">"GET / HTTP/1.1"</span> 200 24 <span class="hljs-string">"-"</span> <span class="hljs-string">"curl/7.29.0"</span>
+[root@node0 ~]<span class="hljs-comment">#</span>
+</div></code></pre>
+<h4 id="632-centos76-%E4%B8%AD%E9%85%8D%E7%BD%AE-iptables-dnat-%E7%BD%91%E7%BB%9C%E6%A8%A1%E5%9E%8B">6.3.2 CentOS7.6 中配置 iptables DNAT 网络模型</h4>
+<pre class="hljs"><code><div>1. 我们在上一个实验的基础上，清空 node1 的防火墙规则
+[root@node1 ~]<span class="hljs-comment"># iptables -t nat -F</span>
+[root@node1 ~]<span class="hljs-comment">#</span>
+[root@node1 ~]<span class="hljs-comment"># iptables -t nat -vnL</span>
+Chain PREROUTING (policy ACCEPT 0 packets, 0 bytes)
+ pkts bytes target     prot opt <span class="hljs-keyword">in</span>     out     <span class="hljs-built_in">source</span>               destination         
+
+Chain INPUT (policy ACCEPT 0 packets, 0 bytes)
+ pkts bytes target     prot opt <span class="hljs-keyword">in</span>     out     <span class="hljs-built_in">source</span>               destination         
+
+Chain OUTPUT (policy ACCEPT 0 packets, 0 bytes)
+ pkts bytes target     prot opt <span class="hljs-keyword">in</span>     out     <span class="hljs-built_in">source</span>               destination         
+
+Chain POSTROUTING (policy ACCEPT 0 packets, 0 bytes)
+ pkts bytes target     prot opt <span class="hljs-keyword">in</span>     out     <span class="hljs-built_in">source</span>               destination         
+[root@node1 ~]<span class="hljs-comment"># </span>
+[root@node1 ~]<span class="hljs-comment">#</span>
+
+2. 在 node2 上安装 httpd 并启动
+[root@node2 ~]<span class="hljs-comment"># </span>
+[root@node2 ~]<span class="hljs-comment"># yum install httpd -y </span>
+Loaded plugins: fastestmirror
+Loading mirror speeds from cached hostfile
+CentOS7-Base                                                                                                        | 3.6 kB  00:00:00     
+Package matching httpd-2.4.6-88.el7.centos.x86_64 already installed. Checking <span class="hljs-keyword">for</span> update.
+Nothing to <span class="hljs-keyword">do</span>
+[root@node2 ~]<span class="hljs-comment"># </span>
+[root@node2 ~]<span class="hljs-comment"># systemctl restart httpd</span>
+[root@node2 ~]<span class="hljs-comment">#</span>
+[root@node2 ~]<span class="hljs-comment"># curl 10.20.100.103</span>
+magedu.io index.page
+[root@node2 ~]<span class="hljs-comment"># </span>
+[root@node2 ~]<span class="hljs-comment">#</span>
+
+使用 node0 请求 node1 的 web 服务，访问失败：
+[root@node0 ~]<span class="hljs-comment"># curl 192.168.10.20</span>
+curl: (7) Failed connect to 192.168.10.20:80; Connection refused
+[root@node0 ~]<span class="hljs-comment"># </span>
+
+
+
+3. 我们在 node1 上配置 DNAT 转发规则
+[root@node1 ~]<span class="hljs-comment"># iptables -t nat -A PREROUTING -d 192.168.10.20 -p tcp --dport 80 -j DNAT --to-destination 10.20.100.103</span>
+[root@node1 ~]<span class="hljs-comment"># </span>
+[root@node1 ~]<span class="hljs-comment"># iptables -t nat -vnL</span>
+Chain PREROUTING (policy ACCEPT 0 packets, 0 bytes)
+ pkts bytes target     prot opt <span class="hljs-keyword">in</span>     out     <span class="hljs-built_in">source</span>               destination         
+    0     0 DNAT       tcp  --  *      *       0.0.0.0/0            192.168.10.20        tcp dpt:80 to:10.20.100.103
+
+Chain INPUT (policy ACCEPT 0 packets, 0 bytes)
+ pkts bytes target     prot opt <span class="hljs-keyword">in</span>     out     <span class="hljs-built_in">source</span>               destination         
+
+Chain OUTPUT (policy ACCEPT 0 packets, 0 bytes)
+ pkts bytes target     prot opt <span class="hljs-keyword">in</span>     out     <span class="hljs-built_in">source</span>               destination         
+
+Chain POSTROUTING (policy ACCEPT 0 packets, 0 bytes)
+ pkts bytes target     prot opt <span class="hljs-keyword">in</span>     out     <span class="hljs-built_in">source</span>               destination         
+[root@node1 ~]<span class="hljs-comment"># </span>
+[root@node1 ~]<span class="hljs-comment">#</span>
+
+再次使用 node0 访问 node1 的 web 服务，转发成果
+[root@node0 ~]<span class="hljs-comment"># curl 192.168.10.20</span>
+magedu.io index.page
+[root@node0 ~]<span class="hljs-comment">#</span>
+
+查看 node2 的 httpd 访问日志:
+[root@node2 ~]<span class="hljs-comment"># cat /var/log/httpd/access_log </span>
+
+10.20.100.103 - - [05/Aug/2019:14:31:10 +0800] <span class="hljs-string">"GET / HTTP/1.1"</span> 200 21 <span class="hljs-string">"-"</span> <span class="hljs-string">"curl/7.29.0"</span>
+192.168.10.10 - - [05/Aug/2019:14:34:26 +0800] <span class="hljs-string">"GET / HTTP/1.1"</span> 200 21 <span class="hljs-string">"-"</span> <span class="hljs-string">"curl/7.29.0"</span>
+[root@node2 ~]<span class="hljs-comment"># </span>
+[root@node2 ~]<span class="hljs-comment">#</span>
+</div></code></pre>
+<h4 id="633-centos76-%E4%B8%AD%E9%85%8D%E7%BD%AE-iptables-pnat-%E7%BD%91%E7%BB%9C%E6%A8%A1%E5%9E%8B">6.3.3 CentOS7.6 中配置 iptables PNAT 网络模型</h4>
+<pre class="hljs"><code><div>1. 我们在上一个实验的基础上修改 node2 的 httpd 服务端口为 88 
+[root@node2 ~]<span class="hljs-comment"># vi /etc/httpd/conf/httpd.conf </span>
+[root@node2 ~]<span class="hljs-comment">#  </span>
+[root@node2 ~]<span class="hljs-comment"># cat /etc/httpd/conf/httpd.conf | grep 'Listen 88'</span>
+Listen 88
+[root@node2 ~]<span class="hljs-comment">#</span>
+[root@node2 ~]<span class="hljs-comment"># systemctl restart httpd</span>
+[root@node2 ~]<span class="hljs-comment"># </span>
+[root@node2 ~]<span class="hljs-comment"># curl 10.20.100.103</span>
+curl: (7) Failed connect to 10.20.100.103:80; Connection refused
+[root@node2 ~]<span class="hljs-comment"># </span>
+[root@node2 ~]<span class="hljs-comment"># curl 10.20.100.103:88</span>
+magedu.io index.page
+[root@node2 ~]<span class="hljs-comment">#</span>
+
+
+3. 使用 node0 访问 node1 的 web 服务 80 端口，访问失败
+[root@node0 ~]<span class="hljs-comment"># curl 192.168.10.20</span>
+curl: (7) Failed connect to 192.168.10.20:80; Connection refused
+[root@node0 ~]<span class="hljs-comment"># </span>
+[root@node0 ~]<span class="hljs-comment">#</span>
+
+在 node2 上添加端口转发规则
+[root@node2 ~]<span class="hljs-comment"># iptables -t nat -A PREROUTING -d 10.20.100.103 -p tcp --dport 80 -j REDIRECT --to-ports 88</span>
+[root@node2 ~]<span class="hljs-comment"># </span>
+[root@node2 ~]<span class="hljs-comment"># iptables -t nat -vnL</span>
+Chain PREROUTING (policy ACCEPT 0 packets, 0 bytes)
+ pkts bytes target     prot opt <span class="hljs-keyword">in</span>     out     <span class="hljs-built_in">source</span>               destination         
+    0     0 REDIRECT   tcp  --  *      *       0.0.0.0/0            10.20.100.103        tcp dpt:80 redir ports 88
+
+Chain INPUT (policy ACCEPT 0 packets, 0 bytes)
+ pkts bytes target     prot opt <span class="hljs-keyword">in</span>     out     <span class="hljs-built_in">source</span>               destination         
+
+Chain OUTPUT (policy ACCEPT 0 packets, 0 bytes)
+ pkts bytes target     prot opt <span class="hljs-keyword">in</span>     out     <span class="hljs-built_in">source</span>               destination         
+
+Chain POSTROUTING (policy ACCEPT 0 packets, 0 bytes)
+ pkts bytes target     prot opt <span class="hljs-keyword">in</span>     out     <span class="hljs-built_in">source</span>               destination         
+[root@node2 ~]<span class="hljs-comment"># </span>
+[root@node2 ~]<span class="hljs-comment">#</span>
+
+
+再次使用 node0 访问 node1 的 web 服务，PNAT 实验成果
+[root@node0 ~]<span class="hljs-comment"># curl 192.168.10.20</span>
+magedu.io index.page
+[root@node0 ~]<span class="hljs-comment">#</span>
+</div></code></pre>
+
+</body>
+</html>
